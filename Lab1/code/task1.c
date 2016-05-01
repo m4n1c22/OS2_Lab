@@ -39,7 +39,7 @@ int test_task1() {
 	/**Fork function fails*/
 	if (ret_val_fork<0) {
 
-		fprintf(stderr, "Fork function failed.\n");
+		fprintf(stderr, "Error:Fork function failed.\n");
 		/**Process returns and terminates with error*/
 		return EXIT_FAILURE;
 	}
@@ -51,7 +51,7 @@ int test_task1() {
 		/**Failure in usleep call*/
 		if(ret_val_usleep<0) {
 			
-			fprintf(stderr, "Usleep function failed.\n");
+			fprintf(stderr, "Error:Usleep function failed.\n");
 			/**Process returns and terminates with error*/
 			return EXIT_FAILURE;
 		}
@@ -61,7 +61,7 @@ int test_task1() {
 		/**Failure in usleep call*/
 		if(ret_val_usleep<0) {
 			
-			fprintf(stderr, "Usleep function failed.\n");
+			fprintf(stderr, "Error:Usleep function failed.\n");
 			/**Process returns and terminates with error*/
 			return EXIT_FAILURE;
 		}
@@ -73,7 +73,7 @@ int test_task1() {
 		/**Failure in usleep call*/
 		if(ret_val_usleep<0) {
 			
-			fprintf(stderr, "Usleep function failed.\n");
+			fprintf(stderr, "Error:Usleep function failed.\n");
 			/**Process returns and terminates with error*/
 			return EXIT_FAILURE;
 		}
@@ -83,7 +83,7 @@ int test_task1() {
 		ret_val_wait = waitpid(ret_val_fork, &child_exit_status, 0);
 		/**Waitpid function fails*/
 		if(ret_val_wait<0) {
-			fprintf(stderr, "waitpid function failed.\n");
+			fprintf(stderr, "Error:waitpid function failed.\n");
 			/**Process returns and terminates with error*/
 			return EXIT_FAILURE;
 		}
@@ -99,7 +99,7 @@ int main(int argc, char const *argv[])
 	int ret_val_test_task1;
 	ret_val_test_task1 = test_task1();
 	if(ret_val_test_task1 != EXIT_SUCCESS) {
-		fprintf(stderr, "Testing Task1 Failed.\n");
+		fprintf(stderr, "Error:Testing Task1 Failed.\n");
 		exit(EXIT_FAILURE);
 	}
 	return EXIT_SUCCESS;
