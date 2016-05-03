@@ -84,12 +84,13 @@ int backup(int max_restarts) {
 
 int request_processing(int max_restarts) {
 
+	printf("Server Process has begun processing the requests...\n");
 	if(backup(max_restarts)==EXIT_SUCCESS) {
 		printf("successfully executed...\n");
 		return EXIT_SUCCESS;
 	}
-	else {
-		fprintf(stderr, "Error:Backup cannot be created.\n");
+	else {		
+		fprintf(stderr, "Error:Backup cannot be created.\nParent server process PID:%d taking control.\n",getpid());
 		return EXIT_FAILURE;
 	}
 }

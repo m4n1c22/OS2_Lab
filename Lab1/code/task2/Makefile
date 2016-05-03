@@ -5,8 +5,9 @@ OUTPUT_FLAG=-o
 SERVER_SRC=server_task2_1.c
 TASK_2_SHELL_SCR=task2_1.sh
 
-#Default target which is executed
-all: exec
+#Target for internal dependency
+prog:
+	$(CC) $(CFLAGS) $(SERVER_SRC) $(OUTPUT_FLAG) $@
 
 #Target to execute the shell script described in task2
 test: prog
@@ -15,9 +16,6 @@ test: prog
 #Target to execute the task2
 exec: prog	
 	./prog
-#Target for internal dependency
-prog:
-	$(CC) $(CFLAGS) $(SERVER_SRC) $(OUTPUT_FLAG) $@
 #Clean up the code.
 clean:
 	rm -f prog
