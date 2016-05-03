@@ -14,11 +14,9 @@ fi
 while [ "$count" -lt "$test_runs" ]
 do		
 	make exec >> overall.log
-	exit_code=$?
-	echo Exit code : $exit_code
-
+	
 	error=$(grep -q "Error" overall.log && echo $?)
-	if [ "$exit_code" != 0 ]
+	if [ "$error" = 0 ]
 	then
 		echo "Error found"
 	fi

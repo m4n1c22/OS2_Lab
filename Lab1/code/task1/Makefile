@@ -1,6 +1,7 @@
 #MakeFile for the OS2 Lab-1
 CC=gcc
 CFLAGS=--std=c99 -Wall -Werror -O1
+OBJFLAG=-c
 OUTPUT_FLAG=-o
 TASK_1_SRC=task1.c
 TASK_1_SHELL_SCR=task1_1.sh
@@ -15,9 +16,11 @@ test: prog
 #Target to execute the task1.2
 exec: prog	
 	./prog
+
 #Target for internal dependency
-prog:
+prog: 
 	$(CC) $(CFLAGS) $(TASK_1_SRC) $(OUTPUT_FLAG) $@
+
 #Clean up the code.
 clean:
 	rm -f prog

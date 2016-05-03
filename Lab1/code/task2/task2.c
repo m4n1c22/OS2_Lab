@@ -90,7 +90,7 @@ int test_task1() {
 		printf("Termination of child successful with status:%d. Child's PID was %d\n", child_exit_status, ret_val_fork);
 	}
 
-	return EXIT_FAILURE;
+	return EXIT_SUCCESS;
 
 }
 
