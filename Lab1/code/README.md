@@ -5,7 +5,9 @@ Understanding concept of Process Pairs
 
 ####Code 
 #####Structure
-The folder contains: 
+The folder contains subfolder task1
+
+***task1/***->
 - Makefile 
 - task1.c - Implementation of task1 C Program. 
 - task1_1.sh - Implementation of task1_1 shell script to execute the C Program in task1.c. 
