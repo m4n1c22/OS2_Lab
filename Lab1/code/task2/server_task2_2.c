@@ -1,13 +1,16 @@
 /** 
-	\file		:	server.c
+	\file		:	server_task2_2.c
 	\author		:	Sreeram Sadasivam
-	\brief		:	Task 2 for Operating Systems:Dependability & Trust Lab - 
+	\brief		:	Task 2.3 for Operating Systems:Dependability & Trust Lab - 
 					Design a simple stateless server program to process client requests.
 	\copyright	:	Copyrights reserved @2016
 */
 
 /**Define BSD SOURCE FOR <GLIBC 2.12. Since Compilation done with option std=c99. Used in regard with usleep().*/
 #define _BSD_SOURCE
+
+/**MACROS*/
+#define DEFAULT_MAX_RESTARTS 	5
 
 /**Standard Headerfiles*/
 #include <stdio.h>
@@ -35,6 +38,14 @@ int backup(int max_restarts) {
 	for (;;)
 	{
 		num_of_restarts++;
+		/**Verify if the fork limit is reached or not.*/
+		if(num_of_restarts > max_restarts){
+			
+			fprintf(stderr, "Error:Fork function limit reached and failed.\n");
+			/**Process returns and terminates with error*/
+			return EXIT_FAILURE;	
+		}
+
 		/**
 			Parent Process calls fork() to generate a child process.
 			If the function call is successful, child's PID is returned
@@ -59,12 +70,6 @@ int backup(int max_restarts) {
 		
 
 		/**Parent process block.*/
-		if(num_of_restarts > max_restarts){
-			
-			fprintf(stderr, "Error:Fork function limit reached and failed.\n");
-			/**Process returns and terminates with error*/
-			return EXIT_FAILURE;	
-		}
 		ret_val_wait = waitpid(ret_val_fork, &child_exit_status, 0);
 		/**Waitpid function fails*/
 		if(ret_val_wait<0) {
@@ -77,21 +82,44 @@ int backup(int max_restarts) {
 
 }
 
-int request_processing() {
+int server(int max_restarts) {
 
-	if(backup()==EXIT_SUCCESS) {
+	printf("Server Process has begun processing the requests...\n");
+	if(backup(max_restarts)==EXIT_SUCCESS) {
 		printf("successfully executed...\n");
 		return EXIT_SUCCESS;
 	}
-	else {
-		printf("Failure.\n");
+	else {		
+		fprintf(stderr, "Error:Backup cannot be created.\nParent server process PID:%d taking control.\n",getpid());
 		return EXIT_FAILURE;
 	}
 }
 
 int main(int argc, char const *argv[])
 {
-	if(request_processing()==EXIT_SUCCESS) {
+	int max_restarts;
+
+	/**
+		Check if the argument count is 3 or 1. If the argc is 1, it means assume default value as 5.
+		Else, pass the limit for forks with option -n within a range 1-50.
+	*/
+	if((argc!=3)&&(argc!=1)) {
+		printf("Invalid usage of the command prog.\nUsage: prog -n <N> where N is a number in the range 1-50");
+		return EXIT_FAILURE;
+	}
+	/**Assume default argument.*/
+	else if(argc == 1) {
+		max_restarts = DEFAULT_MAX_RESTARTS;
+	} else {
+		max_restarts = atoi(argv[argc-1]);
+		if((max_restarts>50)&&(max_restarts<1)) {
+
+			fprintf(stderr, "Error:Max Restarts out of range. Expected range 1-50\n");
+			return EXIT_FAILURE;
+		}
+	}
+	/**Invoking the request processing method.*/
+	if(request_processing(max_restarts)==EXIT_SUCCESS) {
 		return EXIT_SUCCESS;
 	}
 	else {
