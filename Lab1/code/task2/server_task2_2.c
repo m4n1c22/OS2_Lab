@@ -1,7 +1,7 @@
 /** 
 	\file		:	server_task2_2.c
 	\author		:	Sreeram Sadasivam
-	\brief		:	Task 2.3 for Operating Systems:Dependability & Trust Lab - 
+	\brief		:	Task 2.2 for Operating Systems:Dependability & Trust Lab - 
 					Design a simple stateless server program to process client requests.
 	\copyright	:	Copyrights reserved @2016
 */
