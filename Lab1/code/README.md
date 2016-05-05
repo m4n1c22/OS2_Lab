@@ -21,11 +21,11 @@ Thus, compiling all tasks.
 
 ######Steps to run Task 1
  - ```make exec``` will execute the task1 by invoking the fork method call once. Which internally 
- creates a parent-child relationship. It invokes the executable named ***prog***
+ creates a parent-child relationship. It invokes the executable named ***prog.bin***
  - ```make test``` will execute the shell script ***task1_1.sh*** provided in the folder. The script will generate 
  5 calls to the executable ***prog*** generate after compilation.
  - ```make clean``` will clear all the executables from the folder.
- - ```make prog``` will compile the source code and generate the executable in the name referenced as ***prog***.
+ - ```make prog``` will compile the source code and generate the executable in the name referenced as ***prog.bin***.
  
  
  For more details refer the [document](https://github.com/m4n1c22/OS2_Lab/blob/master/Lab1/doc/lab1-process-pairs.pdf)
