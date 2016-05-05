@@ -87,16 +87,26 @@ int test_task1() {
 			/**Process returns and terminates with error*/
 			return EXIT_FAILURE;
 		}
-		printf("Termination of child successful with status:%d. Child's PID was %d\n", child_exit_status, ret_val_fork);
+		else if(ret_val_wait==ret_val_fork){
+			if(WIFEXITED(child_exit_status)){
+				printf("Termination of child successful with status:%d. Child's PID was %d\n", WEXITSTATUS(child_exit_status), ret_val_fork);
+			}
+			if(!WIFEXITED(child_exit_status)){
+				printf("Child exited abnormally with status:%d. Child's PID was %d\n", child_exit_status, ret_val_fork);
+			}
+		}
+		else {
+			fprintf(stderr,"Error: waitpid has returned a positive value which is not the pid of child we were waiting for");
+		}
 	}
 
-	return EXIT_FAILURE;
+	return EXIT_SUCCESS;
 
 }
 
 int main(int argc, char const *argv[])
 {
-	int ret_val_test_task1;
+int ret_val_test_task1;
 	ret_val_test_task1 = test_task1();
 	if(ret_val_test_task1 != EXIT_SUCCESS) {
 		fprintf(stderr, "Error:Testing Task1 Failed.\n");

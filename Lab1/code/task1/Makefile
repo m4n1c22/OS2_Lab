@@ -5,6 +5,7 @@ OBJFLAG=-c
 OUTPUT_FLAG=-o
 TASK_1_SRC=task1.c
 TASK_1_SHELL_SCR=task1_1.sh
+OUT_FILE=prog.bin
 
 #Default target which is executed
 all: exec
@@ -15,12 +16,12 @@ test: prog
 
 #Target to execute the task1.2
 exec: prog	
-	./prog
+	./prog.bin
 
 #Target for internal dependency
 prog: 
-	$(CC) $(CFLAGS) $(TASK_1_SRC) $(OUTPUT_FLAG) $@
+	$(CC) $(CFLAGS) $(TASK_1_SRC) $(OUTPUT_FLAG) $(OUT_FILE)
 
 #Clean up the code.
 clean:
-	rm -f prog
+	rm -f $(OUT_FILE)
