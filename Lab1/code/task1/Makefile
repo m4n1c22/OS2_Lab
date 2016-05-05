@@ -3,9 +3,9 @@ CC=gcc
 CFLAGS=--std=c99 -Wall -Werror -O1
 OBJFLAG=-c
 OUTPUT_FLAG=-o
-TASK_1_SRC=task1.c
+SOURCES = task1.c
 TASK_1_SHELL_SCR=task1_1.sh
-OUT_FILE=prog.bin
+OUT_FILE=prog
 
 #Default target which is executed
 all: exec
@@ -16,11 +16,11 @@ test: prog
 
 #Target to execute the task1.2
 exec: prog	
-	./prog.bin
+	./$(OUT_FILE)
 
 #Target for internal dependency
-prog: 
-	$(CC) $(CFLAGS) $(TASK_1_SRC) $(OUTPUT_FLAG) $(OUT_FILE)
+prog: $(SOURCES)
+	$(CC) $(CFLAGS) $(SOURCES) $(OUTPUT_FLAG) $(OUT_FILE)
 
 #Clean up the code.
 clean:

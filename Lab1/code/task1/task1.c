@@ -93,10 +93,12 @@ int test_task1() {
 			}
 			if(!WIFEXITED(child_exit_status)){
 				printf("Child exited abnormally with status:%d. Child's PID was %d\n", child_exit_status, ret_val_fork);
+			return EXIT_FAILURE;
 			}
 		}
 		else {
 			fprintf(stderr,"Error: waitpid has returned a positive value which is not the pid of child we were waiting for");
+			return EXIT_FAILURE;
 		}
 	}
 
