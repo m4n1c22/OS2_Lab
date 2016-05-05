@@ -2,5 +2,6 @@
 *.c~
 *.o
 *.o~
+prog.bin
 prog
 *.log
