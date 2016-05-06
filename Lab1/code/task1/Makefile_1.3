@@ -3,23 +3,23 @@ CC=gcc
 CFLAGS=--std=c99 -Wall -Werror -O1
 OBJFLAG=-c
 OUTPUT_FLAG=-o
-SOURCES = task1.c
-TASK_1_SHELL_SCR=task1_1.sh
-OUT_FILE=prog
+SOURCES = task1_3.c
+TASK_1_SHELL_SCR=task1_3.sh
+OUT_FILE=prog_3
 
 #Default target which is executed
 all: exec
 
 #Target to execute the shell script described in task1.1
-test: prog
+test: prog_3
 	sh $(TASK_1_SHELL_SCR)
 
 #Target to execute the task1.2
-exec: prog	
+exec: prog_3	
 	./$(OUT_FILE)
 
 #Target for internal dependency
-prog: $(SOURCES)
+prog_3: $(SOURCES)
 	$(CC) $(CFLAGS) $(SOURCES) $(OUTPUT_FLAG) $(OUT_FILE)
 
 #Clean up the code.

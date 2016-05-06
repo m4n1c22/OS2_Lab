@@ -20,9 +20,11 @@
 #include <sys/types.h>
 /**usleep Header file*/
 #include <unistd.h>
+/**time header for random number seed*/
+#include <time.h>
 
 
-int test_task1() {
+int test_task1_3() {
 
 	/**Storage variable for Return values from the system functions: fork, waitpid, usleep*/
 	int ret_val_fork, ret_val_wait, ret_val_usleep;
@@ -65,6 +67,17 @@ int test_task1() {
 			/**Process returns and terminates with error*/
 			return EXIT_FAILURE;
 		}
+		int random_number;
+		srand(time(NULL));
+		random_number = rand();
+		if (random_number % 2 == 0){
+			//printf("number was\t%d\n",random_number);
+			return EXIT_SUCCESS;
+		}
+		else {
+			//printf("number was\t%d\n",random_number);
+			return EXIT_FAILURE;
+		} 
 	}
 	/**Parent process block.*/
 	else {
@@ -108,9 +121,9 @@ int test_task1() {
 
 int main(int argc, char const *argv[])
 {
-int ret_val_test_task1;
-	ret_val_test_task1 = test_task1();
-	if(ret_val_test_task1 != EXIT_SUCCESS) {
+int ret_val_test_task1_3;
+	ret_val_test_task1_3 = test_task1_3();
+	if(ret_val_test_task1_3 != EXIT_SUCCESS) {
 		fprintf(stderr, "Error:Testing Task1 Failed.\n");
 		exit(EXIT_FAILURE);
 	}
