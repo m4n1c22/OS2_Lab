@@ -6,9 +6,6 @@
 	\copyright	:	Copyrights reserved @2016
 */
 
-/**Define BSD SOURCE FOR <GLIBC 2.12. Since Compilation done with option std=c99. Used in regard with usleep().*/
-#define _BSD_SOURCE
-
 /**MACROS*/
 #define DEFAULT_MAX_RESTARTS 	5
 
@@ -22,6 +19,9 @@
 #include <sys/types.h>
 /**usleep Header file*/
 #include <unistd.h>
+
+/**Directory headerfiles*/
+#include <dirent.h>
 
 /**Storage variable for the number of restarts encountered by the parent server process.*/
 int num_of_restarts=0;
@@ -84,9 +84,15 @@ int backup(int max_restarts) {
 
 int server(int max_restarts) {
 
+	DIR *dirp;
 	printf("Server Process has begun processing the requests...\n");
 	if(backup(max_restarts)==EXIT_SUCCESS) {
 		printf("successfully executed...\n");
+		
+		/**Open the requests directory.*/
+		dirp = opendir("requests/");
+
+		closedir(dirp);
 		return EXIT_SUCCESS;
 	}
 	else {		
@@ -119,7 +125,7 @@ int main(int argc, char const *argv[])
 		}
 	}
 	/**Invoking the request processing method.*/
-	if(request_processing(max_restarts)==EXIT_SUCCESS) {
+	if(server(max_restarts)==EXIT_SUCCESS) {
 		return EXIT_SUCCESS;
 	}
 	else {
