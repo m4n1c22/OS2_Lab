@@ -119,7 +119,7 @@ int server(int max_restarts) {
 	if(backup(max_restarts)==EXIT_SUCCESS) {
 		printf("successfully executed...\n");
 		
-		/**Open the requests directory.*/
+		/**Open the current directory.*/
 		dirp = opendir(".");
 
 		while(dirp) {
