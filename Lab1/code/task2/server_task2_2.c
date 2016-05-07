@@ -19,8 +19,9 @@
 #include <sys/types.h>
 /**usleep Header file*/
 #include <unistd.h>
-
-/**Directory headerfiles*/
+/**String Header file*/
+#include <string.h>
+/**Directory Header File*/
 #include <dirent.h>
 
 /**Storage variable for the number of restarts encountered by the parent server process.*/
@@ -82,22 +83,68 @@ int backup(int max_restarts) {
 
 }
 
+int removeRequest(char *req_file_name) {
+	
+	if (unlink(req_file_name)!=0)
+	{
+		fprintf(stderr, "Error:Unlink failed.");
+		return EXIT_FAILURE;
+	}
+	return EXIT_SUCCESS;
+}
+
+int readrequest(char *req_file_name) {
+
+	FILE *fp = fopen(req_file_name,"r");
+	
+	if(fp == NULL) {
+		fprintf(stderr, "Error:File Open failed.");
+		return EXIT_FAILURE;
+	}
+
+	printf("opening and processing file %s\n", req_file_name);
+	//process the content...
+
+	fclose(fp);
+	return EXIT_SUCCESS;
+}
+
 int server(int max_restarts) {
 
 	DIR *dirp;
+
+	struct dirent *dp;
+
 	printf("Server Process has begun processing the requests...\n");
 	if(backup(max_restarts)==EXIT_SUCCESS) {
 		printf("successfully executed...\n");
 		
 		/**Open the requests directory.*/
-		dirp = opendir("requests/");
+		dirp = opendir(".");
 
+		while(dirp) {
+			    
+    		if ((dp = readdir(dirp)) != NULL) {
+        		printf("Directory Name: %s\n", dp->d_name);
+        		if (strstr(dp->d_name,"req_")!=NULL)
+        		{
+        			readrequest(dp->d_name);
+        			removeRequest(dp->d_name);
+        		}
+    		}
+        	else {
+        		break;
+        	}
+		}
+
+		/**Close the requests directory.*/
 		closedir(dirp);
 		return EXIT_SUCCESS;
 	}
 	else {		
 		fprintf(stderr, "Error:Backup cannot be created.\nParent server process PID:%d taking control.\n",getpid());
-		return EXIT_FAILURE;
+		//To make the process to work...
+		return EXIT_SUCCESS;
 	}
 }
 
