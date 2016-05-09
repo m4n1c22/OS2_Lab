@@ -93,7 +93,7 @@ int removeRequest(char *req_file_name) {
 	return EXIT_SUCCESS;
 }
 
-int readrequest(char *req_file_name) {
+int readRequest(char *req_file_name) {
 
 	FILE *fp = fopen(req_file_name,"r");
 	
@@ -102,50 +102,70 @@ int readrequest(char *req_file_name) {
 		return EXIT_FAILURE;
 	}
 
-	printf("opening and processing file %s\n", req_file_name);
-	//process the content...
+	printf("Server: %d req %s\n", getpid(), req_file_name);
 
 	fclose(fp);
+	
 	return EXIT_SUCCESS;
 }
 
 int server(int max_restarts) {
 
 	DIR *dirp;
+	int ret_val_usleep;
 
 	struct dirent *dp;
 
 	printf("Server Process has begun processing the requests...\n");
 	if(backup(max_restarts)==EXIT_SUCCESS) {
-		printf("successfully executed...\n");
-		
-		/**Open the current directory.*/
-		dirp = opendir(".");
+		printf("successfully executed...\n");		
 
-		while(dirp) {
-			    
-    		if ((dp = readdir(dirp)) != NULL) {
-        		printf("Directory Name: %s\n", dp->d_name);
-        		if (strstr(dp->d_name,"req_")!=NULL)
-        		{
-        			readrequest(dp->d_name);
-        			removeRequest(dp->d_name);
-        		}
-    		}
-        	else {
-        		break;
-        	}
-		}
-
-		/**Close the requests directory.*/
-		closedir(dirp);
-		return EXIT_SUCCESS;
 	}
 	else {		
 		fprintf(stderr, "Error:Backup cannot be created.\nParent server process PID:%d taking control.\n",getpid());
-		//To make the process to work...
-		return EXIT_SUCCESS;
 	}
+	while(1) {
+		/**Open the current directory.*/
+		dirp = opendir("./requests");
+
+		while(dirp) {
+			char request_name[100]="requests/";	    
+    		if ((dp = readdir(dirp)) != NULL) {
+        		//printf("Directory Name: %s\n", dp->d_name);
+        		if (strstr(dp->d_name,"req_")!=NULL)
+        		{
+        			if(strcat(request_name,dp->d_name)==NULL) {
+        				fprintf(stderr, "Error:String Concatenation function failed.\n");
+        				return EXIT_FAILURE;	
+        			}
+
+        			if(readRequest(request_name)==EXIT_FAILURE) {
+        				fprintf(stderr, "Error:readRequest function failed.\n");
+        				return EXIT_FAILURE;
+        			}
+
+        			if(removeRequest(request_name)==EXIT_FAILURE) {
+						fprintf(stderr, "Error:removeRequest function failed.\n");
+        				return EXIT_FAILURE;
+        			}
+					ret_val_usleep = usleep(500000);
+					/**Failure in usleep call*/
+					if(ret_val_usleep<0) {
+						
+						fprintf(stderr, "Error:Usleep function failed.\n");
+						/**Process returns and terminates with error*/
+						return EXIT_FAILURE;
+					}
+        		}
+    		}
+    		else {
+    			break;
+    		}        
+		}
+		/**Close the requests directory.*/
+		closedir(dirp);
+	}
+	return EXIT_SUCCESS;
 }
 
 int main(int argc, char const *argv[])

@@ -5,8 +5,10 @@ DIR_CFLAG=-D_BSD_SOURCE
 OUTPUT_FLAG=-o
 SERVER_SRC_task2_1=server_task2_1.c
 SERVER_SRC_task2_2=server_task2_2.c
+CLIENT_SRC_task2_2=client_task2_2.c
 OUTPUT_TASK_2_1=prog_task_2_1.bin
 OUTPUT_TASK_2_2=prog_task_2_2.bin
+OUTPUT_CLIENT_TASK_2_2=client_task2_2.bin
 TASK_2_SHELL_SCR=task2_1.sh
 
 #Target for internal dependency in task 2_1
@@ -16,6 +18,8 @@ prog_task_2_1:
 prog_task_2_2:
 	$(CC) $(CFLAGS) $(DIR_CFLAG) $(SERVER_SRC_task2_2) $(OUTPUT_FLAG) $(OUTPUT_TASK_2_2)
 
+comp_client_task2_2:
+	$(CC) $(CFLAGS) $(DIR_CFLAG) $(CLIENT_SRC_task2_2) $(OUTPUT_FLAG) $(OUTPUT_CLIENT_TASK_2_2)	
 
 #Target to execute the shell script described in task2_1
 test_task_2_1: prog_task_2_1
@@ -32,6 +36,12 @@ exec_task_2_1: prog_task_2_2
 #Target to execute the task2_2
 exec_task_2_2: prog_task_2_2	
 	./prog_task_2_2.bin
+
+
+#Target to execute the task2_2
+client_exec_task_2_2: comp_client_task2_2	
+	./$(OUTPUT_CLIENT_TASK_2_2)
+
 
 #Clean up the code.
 clean:
