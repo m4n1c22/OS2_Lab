@@ -132,7 +132,7 @@ int server(int max_restarts) {
 			char request_name[100]="requests/";	    
     		if ((dp = readdir(dirp)) != NULL) {
         		//printf("Directory Name: %s\n", dp->d_name);
-        		if (strstr(dp->d_name,"req_")!=NULL)
+        		if ((strstr(dp->d_name,"req_")!=NULL)&&(dp->d_type == DT_REG))
         		{
         			if(strcat(request_name,dp->d_name)==NULL) {
         				fprintf(stderr, "Error:String Concatenation function failed.\n");
