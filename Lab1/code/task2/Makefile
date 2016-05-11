@@ -36,7 +36,7 @@ comp_client_task2_2:
 	$(CC) $(CFLAGS) $(DIR_CFLAG) $(CLIENT_SRC_task2_2) $(OUTPUT_FLAG) $(OUTPUT_CLIENT_TASK_2_2)	
 #Target for internal dependency in task 2_2 and compiling the client code in task2_3
 comp_client_task2_3:
-	$(CC) $(CFLAGS) $(DIR_CFLAG) $(CLIENT_SRC_task2_2) $(OUTPUT_FLAG) $(OUTPUT_CLIENT_TASK_2_3)	
+	$(CC) $(CFLAGS) $(DIR_CFLAG) $(CLIENT_SRC_task2_3) $(OUTPUT_FLAG) $(OUTPUT_CLIENT_TASK_2_3)	
 
 
 #Target to execute the shell script described in task2_1

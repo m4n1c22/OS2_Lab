@@ -87,7 +87,7 @@ int client() {
 		closedir(dirp);
 
 		if(!isRequestIDSame) {
-			if(sprintf(request_file_name,"./requests/%s",request_name)<0) {
+			if(sprintf(request_file_name,"requests/%s",request_name)<0) {
 				fprintf(stderr, "Error:STDOUT failed.");
 				return EXIT_FAILURE;			
 			}

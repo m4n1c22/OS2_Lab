@@ -24,6 +24,8 @@
 #include <string.h>
 /**Directory Header File*/
 #include <dirent.h>
+/**time header for random number seed*/
+#include <time.h>
 
 /**Storage variable for the number of restarts encountered by the parent server process.*/
 int num_of_restarts=0;
@@ -79,12 +81,6 @@ int backup(int max_restarts) {
 			/**Process returns and terminates with error*/
 			return EXIT_FAILURE;
 		}
-		else if(ret_val_wait==ret_val_fork){
-			if(child_exit_status!=EXIT_SUCCESS) {
-				fprintf(stderr,"Error: Child exited abnormally with status:%d. Child's PID was %d\n", child_exit_status, ret_val_fork);
-				return EXIT_FAILURE;
-			}
-		}
 	}	
 	return EXIT_SUCCESS;
 
@@ -100,7 +96,7 @@ int removeRequest(char *req_file_name) {
 	return EXIT_SUCCESS;
 }
 
-int readRequest(char *req_file_name) {
+int readRequest(char *req_file_name, int failure_chance) {
 
 	FILE *fp = fopen(req_file_name,"r");
 	
@@ -109,14 +105,31 @@ int readRequest(char *req_file_name) {
 		return EXIT_FAILURE;
 	}
 
-	printf("Server: %d req %s\n", getpid(), req_file_name);
+	printf("Failure rate %d\n", failure_chance);
+
+	if (strstr(req_file_name,"fail")!=NULL) {
+		int random_number;
+		int failure_rate= 100/failure_chance;
+		//srand(time(NULL));
+		random_number = rand();
+		printf("Random Number is %d and failure_rate is %d\n", random_number, failure_rate);
+		if(failure_rate!=0) {
+			if (random_number % failure_rate == 0){
+				fprintf(stderr, "Error:Child process failed.");
+				return EXIT_FAILURE;
+			}
+		}
+	}
+    
+
+    printf("Server: %d req %s\n", getpid(), req_file_name);
 
 	fclose(fp);
 	
 	return EXIT_SUCCESS;
 }
 
-int server(int max_restarts) {
+int server(int max_restarts, int failure_chance) {
 
 	DIR *dirp;
 	int ret_val_usleep;
@@ -146,7 +159,7 @@ int server(int max_restarts) {
         				return EXIT_FAILURE;	
         			}
 
-        			if(readRequest(request_name)==EXIT_FAILURE) {
+        			if(readRequest(request_name, failure_chance)==EXIT_FAILURE) {
         				fprintf(stderr, "Error:readRequest function failed.\n");
         				return EXIT_FAILURE;
         			}
@@ -177,30 +190,76 @@ int server(int max_restarts) {
 
 int main(int argc, char const *argv[])
 {
-	int max_restarts, failure_chance;
+	int max_restarts=-1, failure_chance=-1;
 
 	/**
 		Check if the argument count is 4 or 1. If the argc is 1, it means assume default value as 5 and 0 for
 		max restarts and failure chance respectively.
 		Else, pass the limit for forks with option -n within a range 1-50 and -f failure option.
 	*/
-	if((argc!=4)&&(argc!=1)) {
-		printf("Invalid usage of the command prog.\nUsage: prog -n <N> where N is a number in the range 1-50");
+	if((argc!=5)&&(argc!=1)&&((argc!=3))) {
+		printf("Invalid usage of the command prog.\nUsage: prog -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100");
 		return EXIT_FAILURE;
 	}
 	/**Assume default argument.*/
 	else if(argc == 1) {
+		failure_chance = DEFAULT_FAILURE_CHANCE;
 		max_restarts = DEFAULT_MAX_RESTARTS;
-	} else if(argv){
+
+	} else if(argc == 3) {
+		if(strcmp(argv[argc-2],"-n")==0) {
+			
+			failure_chance=DEFAULT_FAILURE_CHANCE;
+			max_restarts = atoi(argv[argc-1]);
+			if((max_restarts>50)||(max_restarts<1)) {
+
+				fprintf(stderr, "Error:Max Restarts out of range. Expected range 1-50\n");
+				return EXIT_FAILURE;
+			}	
+		}
+		else if(strcmp(argv[argc-2],"-f")==0) {
+
+			max_restarts = DEFAULT_MAX_RESTARTS;				
+			failure_chance = atoi(argv[argc-1]);
+			if((failure_chance>100)||(failure_chance<0)) {
+
+				fprintf(stderr, "Error:Failure Chance out of range. Expected range 0-100\n");
+				return EXIT_FAILURE;
+			}
+		}
+		
+	} else if((strcmp(argv[argc-2],"-f")==0)&&(strcmp(argv[argc-4],"-n")==0)) {
+		max_restarts = atoi(argv[argc-3]);
+		if((max_restarts>50)||(max_restarts<1)) {
+
+			fprintf(stderr, "Error:Max Restarts out of range. Expected range 1-50\n");
+			return EXIT_FAILURE;
+		}
+		failure_chance = atoi(argv[argc-1]);			
+		if((failure_chance>100)||(failure_chance<0)) {
+
+				fprintf(stderr, "Error:Failure Chance out of range. Expected range 0-100\n");
+				return EXIT_FAILURE;
+		}
+	} else if((strcmp(argv[argc-2],"-n")==0)&&(strcmp(argv[argc-4],"-f")==0)) {
 		max_restarts = atoi(argv[argc-1]);
 		if((max_restarts>50)||(max_restarts<1)) {
 
 			fprintf(stderr, "Error:Max Restarts out of range. Expected range 1-50\n");
 			return EXIT_FAILURE;
 		}
+		failure_chance = atoi(argv[argc-3]);			
+		if((failure_chance>100)||(failure_chance<0)) {
+
+				fprintf(stderr, "Error:Failure Chance out of range. Expected range 0-100\n");
+				return EXIT_FAILURE;
+		}
+	} else {
+		printf("Invalid usage of the command prog.\nUsage: prog -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100");
+		return EXIT_FAILURE;	
 	}
 	/**Invoking the request processing method.*/
-	if(server(max_restarts)==EXIT_SUCCESS) {
+	if(server(max_restarts, failure_chance)==EXIT_SUCCESS) {
 		return EXIT_SUCCESS;
 	}
 	else {

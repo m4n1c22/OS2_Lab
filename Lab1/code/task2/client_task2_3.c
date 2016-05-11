@@ -20,7 +20,8 @@
 #include <string.h>
 /**Directory Header File*/
 #include <dirent.h>
-
+/**time header for random number seed*/
+#include <time.h>
 
 
 int removeRequest(char *req_file_name) {
@@ -87,10 +88,22 @@ int client() {
 		closedir(dirp);
 
 		if(!isRequestIDSame) {
-			if(sprintf(request_file_name,"./requests/%s",request_name)<0) {
-				fprintf(stderr, "Error:STDOUT failed.");
-				return EXIT_FAILURE;			
+			int random_number;
+			srand(time(NULL));
+			random_number = rand();
+			if (random_number % 2 == 0){
+				if(sprintf(request_file_name,"./requests/%s_fail",request_name)<0) {
+					fprintf(stderr, "Error:STDOUT failed.");
+					return EXIT_FAILURE;			
+				}
 			}
+			else {
+
+				if(sprintf(request_file_name,"./requests/%s",request_name)<0) {
+					fprintf(stderr, "Error:STDOUT failed.");
+					return EXIT_FAILURE;			
+				}
+			} 
 
 	        if(createRequest(request_file_name)==EXIT_FAILURE) {
 				fprintf(stderr, "Error:createRequest function failed.\n");
