@@ -196,6 +196,10 @@ int main(int argc, char const *argv[])
 			fprintf(stderr, "Error:Max Restarts out of range. Expected range 1-50\n");
 			return EXIT_FAILURE;
 		}
+		else if(strcmp(argv[argc-2],"-n")!=0) {
+			printf("Invalid usage of the command prog.\nUsage: prog -n <N> where N is a number in the range 1-50");
+			return EXIT_FAILURE;
+		}
 	}
 	/**Invoking the request processing method.*/
 	if(server(max_restarts)==EXIT_SUCCESS) {

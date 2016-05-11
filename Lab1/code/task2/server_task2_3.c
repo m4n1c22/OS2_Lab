@@ -7,7 +7,8 @@
 */
 
 /**MACROS*/
-#define DEFAULT_MAX_RESTARTS 	5
+#define DEFAULT_MAX_RESTARTS 		5
+#define DEFAULT_FAILURE_CHANCE		0
 
 /**Standard Headerfiles*/
 #include <stdio.h>
@@ -176,20 +177,21 @@ int server(int max_restarts) {
 
 int main(int argc, char const *argv[])
 {
-	int max_restarts;
+	int max_restarts, failure_chance;
 
 	/**
-		Check if the argument count is 3 or 1. If the argc is 1, it means assume default value as 5.
-		Else, pass the limit for forks with option -n within a range 1-50.
+		Check if the argument count is 4 or 1. If the argc is 1, it means assume default value as 5 and 0 for
+		max restarts and failure chance respectively.
+		Else, pass the limit for forks with option -n within a range 1-50 and -f failure option.
 	*/
-	if((argc!=3)&&(argc!=1)) {
+	if((argc!=4)&&(argc!=1)) {
 		printf("Invalid usage of the command prog.\nUsage: prog -n <N> where N is a number in the range 1-50");
 		return EXIT_FAILURE;
 	}
 	/**Assume default argument.*/
 	else if(argc == 1) {
 		max_restarts = DEFAULT_MAX_RESTARTS;
-	} else {
+	} else if(argv){
 		max_restarts = atoi(argv[argc-1]);
 		if((max_restarts>50)||(max_restarts<1)) {
 
