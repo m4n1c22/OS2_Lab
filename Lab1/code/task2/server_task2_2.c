@@ -185,7 +185,7 @@ int main(int argc, char const *argv[])
 		max_restarts = DEFAULT_MAX_RESTARTS;
 	} else {
 		max_restarts = atoi(argv[argc-1]);
-		if((max_restarts>50)&&(max_restarts<1)) {
+		if((max_restarts>50)||(max_restarts<1)) {
 
 			fprintf(stderr, "Error:Max Restarts out of range. Expected range 1-50\n");
 			return EXIT_FAILURE;
