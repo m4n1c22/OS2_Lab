@@ -88,12 +88,14 @@ int test_task1() {
 			return EXIT_FAILURE;
 		}
 		else if(ret_val_wait==ret_val_fork){
-			if(WIFEXITED(child_exit_status)){
-				printf("Termination of child successful with status:%d. Child's PID was %d\n", WEXITSTATUS(child_exit_status), ret_val_fork);
+			if(child_exit_status!=EXIT_SUCCESS) {
+				fprintf(stderr,"Error: Child exited abnormally with status:%d. Child's PID was %d\n", child_exit_status, ret_val_fork);
+				return EXIT_FAILURE;
 			}
-			if(!WIFEXITED(child_exit_status)){
-				printf("Child exited abnormally with status:%d. Child's PID was %d\n", child_exit_status, ret_val_fork);
-			return EXIT_FAILURE;
+
+			else {
+				printf("Termination of child successful with status:%d. Child's PID was %d\n", WEXITSTATUS(child_exit_status), ret_val_fork);
+				return EXIT_SUCCESS;
 			}
 		}
 		else {
@@ -108,11 +110,11 @@ int test_task1() {
 
 int main(int argc, char const *argv[])
 {
-int ret_val_test_task1;
+	int ret_val_test_task1;
 	ret_val_test_task1 = test_task1();
 	if(ret_val_test_task1 != EXIT_SUCCESS) {
 		fprintf(stderr, "Error:Testing Task1 Failed.\n");
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;
 }

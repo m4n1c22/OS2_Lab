@@ -17,7 +17,7 @@ do
 	exit_code=$?
 	echo Exit code : $exit_code
 
-	error=$(grep -q "Error" overall.log && echo $?)
+	error=$(grep -q "Error" overall.log)
 	if [ "$exit_code" != 0 ]
 	then
 		echo "Error found"
