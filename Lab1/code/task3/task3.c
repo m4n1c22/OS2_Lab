@@ -7,31 +7,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <signal.h>
-
-void sighandler(int signum)
-{
-	// TODO here change server process into backup process clear state
-	/* Change the server process into a backup process. A simple and clean way to achieve this
-	is to replace the current server process image by a fresh instance of your program. This has
-	the same effects as if you kill and restart your whole program. See man 3 exec for details
-	on how to achieve this. Note that the original command line options have to survive this
-	process image replacement.*/
-	if (signum == SIGPIPE) {
-		printf("Caught signal %d pipe read end closed\n", signum);
-		printf("Parent (backup) process failed\n");
-	} else if (signum == SIGINT) {
-		printf("Caught signal %d, interrupt\n", signum);
-	}	
-	
-	exit(EXIT_SUCCESS);
-}
+#include <errno.h>
 
 int backup_terminated (int fork_ret_val, int fd[2], int read_count) {
-	int ret_val_write,ret_val_usleep, ret_val_close;
+	int ret_val_write,ret_val_usleep, ret_val_close, ret_val_execl;
 	char buffer;
 	char poll_message[] = "Hallo I am child (server) process, this is a polling message\n";
-	signal(SIGINT, sighandler);
-	signal(SIGPIPE, sighandler);
+
 	// child (server) process
 	if (fork_ret_val == 0) {
 	        do {
@@ -45,7 +27,17 @@ int backup_terminated (int fork_ret_val, int fd[2], int read_count) {
 			}
 			ret_val_write = write(fd[1], poll_message, strlen(poll_message));
 			if (ret_val_write < 0) {
-				fprintf(stderr, "Error: write function failed.\n");
+				fprintf(stderr, "Error from %d: write function failed.\n", getpid());
+				ret_val_write = errno;
+				if (errno == EPIPE) {
+					printf("From id %d: Parent (backup) process failed\n", getpid());
+					ret_val_execl = execl("./prog", "prog", NULL);
+					if(ret_val_execl < 0) {
+						fprintf(stderr, "Error: execl function failed.\n");
+						// process returns and terminates with error
+						return EXIT_FAILURE;
+					}
+				}
 				// process returns and terminates with error
 				return EXIT_FAILURE;
 			}
@@ -57,22 +49,21 @@ int backup_terminated (int fork_ret_val, int fd[2], int read_count) {
 			if (read_count == 0) {
 				ret_val_close = close(fd[0]);
 				if(ret_val_close < 0) {
-	       				fprintf(stderr, "Error: close function failed.\n");
+	       				fprintf(stderr, "Error %s: close function failed.\n",strerror(errno));
 					return EXIT_FAILURE;
 	 			}
 			}
                     	ret_val_write = write(STDOUT_FILENO, &buffer, 1);
 		    	if(ret_val_write < 0) {
-				fprintf(stderr, "Error: write function failed.\n");
+				fprintf(stderr, "Error from %d: write function failed.\n", getpid());
 				// process returns and terminates with error
 				return EXIT_FAILURE;
 		   	}
 			read_count--;
 	        }
-
                 ret_val_write = write(STDOUT_FILENO, "\n", 1);
 	        if(ret_val_write < 0) {
-	       		fprintf(stderr, "Error: write function failed.\n");
+	       		fprintf(stderr, "Error from %d: write function failed.\n",  getpid());
 			// process returns and terminates with error
 			return EXIT_FAILURE;
 	 	}
@@ -88,7 +79,7 @@ int backup_terminated (int fork_ret_val, int fd[2], int read_count) {
 int test_task3(int read_count) {
 	int pipefd[2], ret_val_pipe, ret_val_close;
         pid_t ret_val_fork;
-        signal(SIGPIPE, SIG_IGN);
+
         ret_val_pipe = pipe(pipefd);
 	if (ret_val_pipe < 0) {
 		fprintf(stderr, "Error: pipe function failed.\n");
@@ -131,11 +122,6 @@ int test_task3(int read_count) {
 		printf("Creation of child successful. Child's PID is %d\n", ret_val_fork);
 		// parent (backup) process will continuously receive poll message from child (server) process
 		backup_terminated (ret_val_fork, pipefd, read_count);
-                ret_val_close = close(pipefd[0]);
-		if(ret_val_close < 0) {
-	       		fprintf(stderr, "Error: close function failed.\n");
-			return EXIT_FAILURE;
-	 	}
 		// wait for child (server) process             
 		wait(NULL);
                 exit(EXIT_SUCCESS);
@@ -145,8 +131,10 @@ int test_task3(int read_count) {
 
 int main(int argc, char *argv[]) {
 	int ret_val_test_task3;
-	// Generate error after 150th read of parent process
-	ret_val_test_task3 = test_task3(150);
+	// ignore sigpipe signal
+        signal(SIGPIPE, SIG_IGN);
+	// Generate error after 200th read of parent process
+	ret_val_test_task3 = test_task3(200);
 	if(ret_val_test_task3 != EXIT_SUCCESS) {
 		fprintf(stderr, "Error:Testing Task3 Failed.\n");
 		exit(EXIT_FAILURE);
