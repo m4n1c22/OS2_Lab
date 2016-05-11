@@ -1,13 +1,10 @@
 /** 
-	\file		:	server_task2_1.c
+	\file		:	server_task2_3.c
 	\author		:	Sreeram Sadasivam
-	\brief		:	Task 2 for Operating Systems:Dependability & Trust Lab - 
+	\brief		:	Task 2.3 for Operating Systems:Dependability & Trust Lab - 
 					Design a simple stateless server program to process client requests.
 	\copyright	:	Copyrights reserved @2016
 */
-
-/**Define BSD SOURCE FOR <GLIBC 2.12. Since Compilation done with option std=c99. Used in regard with usleep().*/
-#define _BSD_SOURCE
 
 /**MACROS*/
 #define DEFAULT_MAX_RESTARTS 	5
@@ -22,6 +19,10 @@
 #include <sys/types.h>
 /**usleep Header file*/
 #include <unistd.h>
+/**String Header file*/
+#include <string.h>
+/**Directory Header File*/
+#include <dirent.h>
 
 /**Storage variable for the number of restarts encountered by the parent server process.*/
 int num_of_restarts=0;
@@ -88,17 +89,89 @@ int backup(int max_restarts) {
 
 }
 
-int request_processing(int max_restarts) {
+int removeRequest(char *req_file_name) {
+	
+	if (unlink(req_file_name)!=0)
+	{
+		fprintf(stderr, "Error:Unlink failed.");
+		return EXIT_FAILURE;
+	}
+	return EXIT_SUCCESS;
+}
+
+int readRequest(char *req_file_name) {
+
+	FILE *fp = fopen(req_file_name,"r");
+	
+	if(fp == NULL) {
+		fprintf(stderr, "Error:File Open failed.");
+		return EXIT_FAILURE;
+	}
+
+	printf("Server: %d req %s\n", getpid(), req_file_name);
+
+	fclose(fp);
+	
+	return EXIT_SUCCESS;
+}
+
+int server(int max_restarts) {
+
+	DIR *dirp;
+	int ret_val_usleep;
+
+	struct dirent *dp;
 
 	printf("Server Process has begun processing the requests...\n");
 	if(backup(max_restarts)==EXIT_SUCCESS) {
-		printf("successfully executed...\n");
-		return EXIT_SUCCESS;
+		printf("successfully executed...\n");		
+
 	}
 	else {		
 		fprintf(stderr, "Error:Backup cannot be created.\nParent server process PID:%d taking control.\n",getpid());
-		return EXIT_FAILURE;
 	}
+	while(1) {
+		/**Open the current directory.*/
+		dirp = opendir("./requests");
+
+		while(dirp) {
+			char request_name[100]="requests/";	    
+    		if ((dp = readdir(dirp)) != NULL) {
+        		//printf("Directory Name: %s\n", dp->d_name);
+        		if ((strstr(dp->d_name,"req_")!=NULL)&&(dp->d_type == DT_REG))
+        		{
+        			if(strcat(request_name,dp->d_name)==NULL) {
+        				fprintf(stderr, "Error:String Concatenation function failed.\n");
+        				return EXIT_FAILURE;	
+        			}
+
+        			if(readRequest(request_name)==EXIT_FAILURE) {
+        				fprintf(stderr, "Error:readRequest function failed.\n");
+        				return EXIT_FAILURE;
+        			}
+
+        			if(removeRequest(request_name)==EXIT_FAILURE) {
+						fprintf(stderr, "Error:removeRequest function failed.\n");
+        				return EXIT_FAILURE;
+        			}
+					ret_val_usleep = usleep(500000);
+					/**Failure in usleep call*/
+					if(ret_val_usleep<0) {
+						
+						fprintf(stderr, "Error:Usleep function failed.\n");
+						/**Process returns and terminates with error*/
+						return EXIT_FAILURE;
+					}
+        		}
+    		}
+    		else {
+    			break;
+    		}        
+		}
+		/**Close the requests directory.*/
+		closedir(dirp);
+	}
+	return EXIT_SUCCESS;
 }
 
 int main(int argc, char const *argv[])
@@ -125,7 +198,7 @@ int main(int argc, char const *argv[])
 		}
 	}
 	/**Invoking the request processing method.*/
-	if(request_processing(max_restarts)==EXIT_SUCCESS) {
+	if(server(max_restarts)==EXIT_SUCCESS) {
 		return EXIT_SUCCESS;
 	}
 	else {

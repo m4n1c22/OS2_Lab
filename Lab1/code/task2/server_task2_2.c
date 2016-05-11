@@ -78,6 +78,12 @@ int backup(int max_restarts) {
 			/**Process returns and terminates with error*/
 			return EXIT_FAILURE;
 		}
+		else if(ret_val_wait==ret_val_fork){
+			if(child_exit_status!=EXIT_SUCCESS) {
+				fprintf(stderr,"Error: Child exited abnormally with status:%d. Child's PID was %d\n", child_exit_status, ret_val_fork);
+				return EXIT_FAILURE;
+			}
+		}
 	}	
 	return EXIT_SUCCESS;
 
