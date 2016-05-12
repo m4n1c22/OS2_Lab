@@ -9,6 +9,8 @@
 /**MACROS*/
 #define DEFAULT_MAX_RESTARTS 		5
 #define DEFAULT_FAILURE_CHANCE		0
+#define READ_END			0
+#define WRITE_END			1
 
 /**Standard Headerfiles*/
 #include <stdio.h>
@@ -32,7 +34,7 @@
 #include <errno.h>
 
 /**Storage variable for the number of restarts encountered by the parent server process.*/
-int ret_val_fork, num_of_restarts=0;
+int num_of_restarts=0;
 /**File descriptor used between parent and child processes for communication (read, write).*/
 int pipefd[2];
 /** 	In order to save command line arguments to use while restarting the program.
@@ -54,8 +56,8 @@ int closePipe(int close_end) {
 
 int backup(int max_restarts) {
 
-	/**Storage variable for Return values from the system functions: fork, waitpid*/
-	int ret_val_wait, ret_val_pipe;
+	/**Storage variable for Return values from the system functions: fork, waitpid, pipe*/
+	int ret_val_fork, ret_val_wait, ret_val_pipe;
 
 	/**Storage variable for the child exit status*/
 	int child_exit_status;
@@ -103,7 +105,7 @@ int backup(int max_restarts) {
 			/**	child closes unused read end of the pipe, since it
 			  	will only use the write end of the pipe.
 			*/
-			closePipe(0);
+			closePipe(READ_END);
 			/** Print the process id of the child(server) process to the console.
 			*/
 			printf("server %d\n", getpid());	
@@ -115,7 +117,7 @@ int backup(int max_restarts) {
 		/**Parent process closes write end of the pipe, since it will
 	           only use the read end of the pipe.
 		*/
-		closePipe(1);
+		closePipe(WRITE_END);
 		ret_val_wait = waitpid(ret_val_fork, &child_exit_status, 0);
 		/**Waitpid function fails*/
 		if(ret_val_wait<0) {
@@ -125,7 +127,7 @@ int backup(int max_restarts) {
 		}
 		/**Before exiting, parent process closes read end of the pipe.
 		*/
-		closePipe(0);
+		closePipe(READ_END);
 	}	
 	return EXIT_SUCCESS;
 }
@@ -135,73 +137,43 @@ int backup(int max_restarts) {
 	child can conclude that parent has crashed or terminated, therefore it resets the execution
 	of the program and it becomes the new parent.
 */
-int backupTerminated (int fd[2], int ret_val_fork) {
+int backupTerminated (int fd[2]) {
 
 	/**Storage variable for return values from the system functions: write, usleep and execl.*/
 	int ret_val_write,ret_val_usleep,ret_val_execl;
-	/**Char pointer for read call, to store the data coming from the child.*/
-	char buffer;
 	/**Heartbeat message which client periodically sends to the parent in order to detect and failure.*/
 	char poll_message[] = "Hallo I am child (server) process, this is a polling message\n";
 
-	/**Child (server) process block*/
-	if (ret_val_fork == 0) {
-		/**Reduce the polling frequency.*/
-		ret_val_usleep = usleep(500000);
-		/**Failure in usleep call.*/
-		if(ret_val_usleep < 0) {
-			fprintf(stderr, "Error: usleep function failed.\n");
-			/**Process returns and terminates with error.*/
-			return EXIT_FAILURE;
-		}	
-		/**Child writes the message in the poll_message array to the pipe.*/
-		ret_val_write = write(fd[1], poll_message, strlen(poll_message));
-		if (ret_val_write < 0) {
-			fprintf(stderr, "Error from %d: write function failed.\n", getpid());
-			/** Detecting the EPIPE error, which happens when the read end of the pipe is closed.*/
-			ret_val_write = errno;
-			if (errno == EPIPE) {
-				printf("From id %d: Parent (backup) process failed\n", getpid());
-				/** 	Child (server) process closes write end of the pipe, before resetting the
-					program.
-				*/
-				closePipe(1);
-				/**TODO add command line arguments to the execl(directory,executable,..,NULL),
-					system call which restarts the execution from the beginning.					
-				*/
-				ret_val_execl = execl("./server_task3_1", "server_task3_1", (char *)NULL);
-				if(ret_val_execl < 0) {
-					fprintf(stderr, "Error: execl function failed.\n");
-					/**Process returns and terminates with error.*/
-					return EXIT_FAILURE;
-				}
-			}
-			/**Process returns and terminates with error.*/
-			return EXIT_FAILURE;
-		}
-	/**Parent (backup) process block.*/
-	} else if ( ret_val_fork > 0) {
-		/**	Parent process reads from the pipe till the end of the data in the pipe
-			by one byte each time, stores the result in buffer.
-		*/
-		while (read(fd[0], &buffer, 1) > 0) {
-			/**Parent prints the result to the console.*/
-                    	ret_val_write = write(STDOUT_FILENO, &buffer, 1);
-		    	if(ret_val_write < 0) {
-				fprintf(stderr, "Error from %d: write function failed.\n", getpid());
+	/**Reduce the polling frequency.*/
+	ret_val_usleep = usleep(500000);
+	/**Failure in usleep call.*/
+	if(ret_val_usleep < 0) {
+		fprintf(stderr, "Error: usleep function failed.\n");
+		/**Process returns and terminates with error.*/
+		return EXIT_FAILURE;
+	}	
+	/**Child writes the message in the poll_message array to the pipe.*/
+	ret_val_write = write(fd[1], poll_message, strlen(poll_message));
+	if (ret_val_write < 0) {
+		fprintf(stderr, "Error from %d: write function failed.\n", getpid());
+		/** Detecting the EPIPE error, which happens when the read end of the pipe is closed.*/
+		ret_val_write = errno;
+		if (errno == EPIPE) {
+			printf("From id %d: Parent (backup) process failed\n", getpid());
+			/** 	Child (server) process closes write end of the pipe, before resetting the
+				program.
+			*/
+			closePipe(WRITE_END);
+			/**TODO add command line arguments to the execl(directory,executable,..,NULL),
+			system call which restarts the execution from the beginning.					
+			*/
+			ret_val_execl = execl("./server_task3_1", "server_task3_1", (char *)NULL);
+			if(ret_val_execl < 0) {
+				fprintf(stderr, "Error: execl function failed.\n");
 				/**Process returns and terminates with error.*/
 				return EXIT_FAILURE;
-		   	}
-	        }
-		/**Parent prints new line to the console after the last byte of the message received from child.*/
-                ret_val_write = write(STDOUT_FILENO, "\n", 1);
-	        if(ret_val_write < 0) {
-	       		fprintf(stderr, "Error from %d: write function failed.\n",  getpid());
-			/**Process returns and terminates with error.*/
-			return EXIT_FAILURE;
-	 	}
-	} else {
-        	fprintf(stderr, "Error: fork function failed.\n");
+			}
+		}
 		/**Process returns and terminates with error.*/
 		return EXIT_FAILURE;
 	}
@@ -270,7 +242,7 @@ int server(int max_restarts, int failure_chance) {
 		while(dirp) {
 			char request_name[100]="requests/";
 			if(ret_backup == EXIT_SUCCESS) {
-				backupTerminated(pipefd, ret_val_fork);
+				backupTerminated(pipefd);
 				printf("successfully executed...\n");		
 
 			}	    
