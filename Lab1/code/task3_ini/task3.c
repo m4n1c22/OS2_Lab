@@ -1,3 +1,11 @@
+/** 
+	\file		:	task3_ini.c
+	\author		:	Gizem Güleşir
+	\brief		:	Task 2.3 for Operating Systems:Dependability & Trust Lab - 
+					Design a simple stateless server program to process client requests.
+	\copyright	:	Copyrights reserved @2016
+*/
+
 /**Define BSD SOURCE FOR <GLIBC 2.12. Since Compilation done with option std=c99. Used in regard with usleep().*/
 #define _BSD_SOURCE
 #include <sys/wait.h>
