@@ -1,22 +1,40 @@
 #MakeFile for the OS2 Lab-1
 CC=gcc
 CFLAGS=--std=c99 -Wall -Werror -O1
-OBJFLAG=-c
+DIR_CFLAG=-D_BSD_SOURCE
 OUTPUT_FLAG=-o
-SOURCES = task3.c
-OUT_FILE=prog
 
-#Default target which is executed
-all: exec
+SERVER_SRC_TASK3_1=server_task3_1.c
 
-#Target to execute the task3
-exec: prog	
-	./$(OUT_FILE)
+CLIENT_SRC_TASK3_1=client_task3_1.c
 
-#Target for internal dependency
-prog: $(SOURCES)
-	$(CC) $(CFLAGS) $(SOURCES) $(OUTPUT_FLAG) $(OUT_FILE)
+OUTPUT_SERVER_TASK3_1=server_task3_1.bin
+
+OUTPUT_CLIENT_TASK3_1=client_task3_1.bin
+
+TASK3_1_SHELL_SCR=task3_1.sh
+
+
+#Target for internal dependency in task 3_1 and compiling the server code in task3_1
+comp_server_task3_1:
+	$(CC) $(CFLAGS) $(DIR_CFLAG) $(SERVER_SRC_TASK3_1) $(OUTPUT_FLAG) $(OUTPUT_SERVER_TASK3_1)
+	
+#Target for internal dependency in task 3_1 and compiling the client code in task3_1
+comp_client_task3_1:
+	$(CC) $(CFLAGS) $(DIR_CFLAG) $(CLIENT_SRC_TASK3_1) $(OUTPUT_FLAG) $(OUTPUT_CLIENT_TASK3_1)	
+
+#Target to execute the shell script described in task3_1
+#test_task3_1: comp_server_task3_1
+	#sh $(TASK3_1_SHELL_SCR)
+
+#Target to execute the server program for task3_1
+server_exec_task3_1: comp_server_task3_1	
+	./$(OUTPUT_SERVER_TASK3_1)
+
+#Target to execute client program for task3_1
+client_exec_task3_1: comp_client_task3_1	
+	./$(OUTPUT_CLIENT_TASK3_1)
 
 #Clean up the code.
 clean:
-	rm -f $(OUT_FILE)
+	rm -f *.bin *.o
