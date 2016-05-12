@@ -7,7 +7,6 @@
 */
 
 /**MACROS*/
-//TODO dont forget to change max restart to 5, failure chance to 0
 #define DEFAULT_MAX_RESTARTS 		5
 #define DEFAULT_FAILURE_CHANCE		0
 
@@ -36,13 +35,18 @@
 int ret_val_fork, num_of_restarts=0;
 /**File descriptor used between parent and child processes for communication (read, write).*/
 int pipefd[2];
+/** 	In order to save command line arguments to use while restarting the program.
+	Converted into char * to use in execl function.
+*/
+char c_max_restarts[10];
+char c_max_failure_chance[10];
 
 /* close the file descriptor, 0 for closing read side, 1 for closing write side */
 int closePipe(int close_end) {
 
 	int ret_val_close = close(pipefd[close_end]);
 	if(ret_val_close < 0) {
-	       	fprintf(stderr, "Error: close function failed.\n");
+		fprintf(stderr, "Error: close function failed.\n");
 		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;
@@ -132,6 +136,7 @@ int backup(int max_restarts) {
 	of the program and it becomes the new parent.
 */
 int backupTerminated (int fd[2], int ret_val_fork) {
+
 	/**Storage variable for return values from the system functions: write, usleep and execl.*/
 	int ret_val_write,ret_val_usleep,ret_val_execl;
 	/**Char pointer for read call, to store the data coming from the child.*/
@@ -164,7 +169,7 @@ int backupTerminated (int fd[2], int ret_val_fork) {
 				/**TODO add command line arguments to the execl(directory,executable,..,NULL),
 					system call which restarts the execution from the beginning.					
 				*/
-				ret_val_execl = execl("./server_task3_1", "server_task3_1", NULL);
+				ret_val_execl = execl("./server_task3_1", "server_task3_1", (char *)NULL);
 				if(ret_val_execl < 0) {
 					fprintf(stderr, "Error: execl function failed.\n");
 					/**Process returns and terminates with error.*/
@@ -203,7 +208,7 @@ int backupTerminated (int fd[2], int ret_val_fork) {
 	return EXIT_SUCCESS;
 }
 int removeRequest(char *req_file_name) {
-	
+
 	if (unlink(req_file_name)!=0)
 	{
 		fprintf(stderr, "Error:Unlink failed.");
@@ -215,7 +220,7 @@ int removeRequest(char *req_file_name) {
 int readRequest(char *req_file_name, int failure_chance) {
 
 	FILE *fp = fopen(req_file_name,"r");
-	
+
 	if(fp == NULL) {
 		fprintf(stderr, "Error:File Open failed.");
 		return EXIT_FAILURE;
@@ -237,9 +242,8 @@ int readRequest(char *req_file_name, int failure_chance) {
 		}
 	}
 
-    	printf("Server: %d req %s\n", getpid(), req_file_name);
+	printf("Server: %d req %s\n", getpid(), req_file_name);
 	fclose(fp);
-	
 	return EXIT_SUCCESS;
 }
 
@@ -381,6 +385,12 @@ int main(int argc, char const *argv[])
 		printf("Invalid usage of the command prog.\nUsage: prog -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100");
 		return EXIT_FAILURE;	
 	}
+
+	/**Convert max restart and failure chance into char *.*/
+	sprintf(c_max_restarts, "%d", max_restarts);
+	sprintf(c_max_failure_chance, "%d", failure_chance);
+	// TODO: char concatenation for "-n" + c_max_restarts and  "-f", c_max_failure_chance
+
 	/**Invoking the request processing method.*/
 	if(server(max_restarts, failure_chance)==EXIT_SUCCESS) {
 		return EXIT_SUCCESS;
