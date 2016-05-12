@@ -109,11 +109,11 @@ int readRequest(char *req_file_name, int failure_chance) {
 
 	if (strstr(req_file_name,"fail")!=NULL) {
 		int random_number;
-		int failure_rate= 100/failure_chance;
+		int failure_rate= 0;
 		//srand(time(NULL));
 		random_number = rand();
-		printf("Random Number is %d and failure_rate is %d\n", random_number, failure_rate);
-		if(failure_rate!=0) {
+		if(failure_chance!=0) {
+			failure_rate = 100/failure_chance;
 			if (random_number % failure_rate == 0){
 				fprintf(stderr, "Error:Child process failed.");
 				return EXIT_FAILURE;
