@@ -1,6 +1,6 @@
 /** 
 	\file		:	server_task3_1.c
-	\author		:	Sreeram Sadasivam, Gizem Güleşir
+	\author		:	Sreeram Sadasivam
 	\brief		:	Task 2.3 for Operating Systems:Dependability & Trust Lab - 
 					Design a simple stateless server program to process client requests.
 	\copyright	:	Copyrights reserved @2016
