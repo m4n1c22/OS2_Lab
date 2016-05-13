@@ -9,8 +9,8 @@
 /**MACROS*/
 #define DEFAULT_MAX_RESTARTS 		5
 #define DEFAULT_FAILURE_CHANCE		0
-#define READ_END			0
-#define WRITE_END			1
+#define READ_END					0
+#define WRITE_END					1
 
 /**Standard Headerfiles*/
 #include <stdio.h>
@@ -37,11 +37,6 @@
 int num_of_restarts=0;
 /**File descriptor used between parent and child processes for communication (read, write).*/
 int pipefd[2];
-/** 	In order to save command line arguments to use while restarting the program.
-	Converted into char * to use in execl function.
-*/
-char c_max_restarts[10];
-char c_max_failure_chance[10];
 
 /* close the file descriptor, 0 for closing read side, 1 for closing write side */
 int closePipe(int close_end) {
@@ -137,12 +132,14 @@ int backup(int max_restarts) {
 	child can conclude that parent has crashed or terminated, therefore it resets the execution
 	of the program and it becomes the new parent.
 */
-int backupTerminated (int fd[2]) {
+int backupTerminated (int fd[2], int max_restarts, int failure_chance) {
 
 	/**Storage variable for return values from the system functions: write, usleep and execl.*/
 	int ret_val_write,ret_val_usleep,ret_val_execl;
 	/**Heartbeat message which client periodically sends to the parent in order to detect and failure.*/
-	char poll_message[] = "Hallo I am child (server) process, this is a polling message\n";
+	char poll_message[] = "I am alive\n";
+
+	char c_args[100];
 
 	/**Reduce the polling frequency.*/
 	ret_val_usleep = usleep(500000);
@@ -164,10 +161,14 @@ int backupTerminated (int fd[2]) {
 				program.
 			*/
 			closePipe(WRITE_END);
-			/**TODO add command line arguments to the execl(directory,executable,..,NULL),
-			system call which restarts the execution from the beginning.					
-			*/
-			ret_val_execl = execl("./server_task3_1", "server_task3_1", (char *)NULL);
+			
+			/**Convert max restart and failure chance into char *.*/
+			if(sprintf(c_args,"-n %d -f %d",max_restarts, failure_chance)<0) {
+				fprintf(stderr, "Error:STDOUT failed.");
+				return EXIT_FAILURE;			
+			}
+			
+			ret_val_execl = execl("./server_task3_1", "server_task3_1", c_args);
 			if(ret_val_execl < 0) {
 				fprintf(stderr, "Error: execl function failed.\n");
 				/**Process returns and terminates with error.*/
@@ -242,7 +243,7 @@ int server(int max_restarts, int failure_chance) {
 		while(dirp) {
 			char request_name[100]="requests/";
 			if(ret_backup == EXIT_SUCCESS) {
-				backupTerminated(pipefd);
+				backupTerminated(pipefd, max_restarts, failure_chance);
 				printf("successfully executed...\n");		
 
 			}	    
@@ -357,11 +358,6 @@ int main(int argc, char const *argv[])
 		printf("Invalid usage of the command prog.\nUsage: prog -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100");
 		return EXIT_FAILURE;	
 	}
-
-	/**Convert max restart and failure chance into char *.*/
-	sprintf(c_max_restarts, "%d", max_restarts);
-	sprintf(c_max_failure_chance, "%d", failure_chance);
-	// TODO: char concatenation for "-n" + c_max_restarts and  "-f", c_max_failure_chance
 
 	/**Invoking the request processing method.*/
 	if(server(max_restarts, failure_chance)==EXIT_SUCCESS) {
