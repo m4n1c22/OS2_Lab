@@ -1,8 +1,9 @@
 /** 
 	\file		:	server_task3_1.c
-	\author		:	Sreeram Sadasivam, Gizem Güleşir
-	\brief		:	Task 2.3 for Operating Systems:Dependability & Trust Lab - 
+	\author		:	Sreeram Sadasivam
+	\brief		:	Task 3.1 for Operating Systems:Dependability & Trust Lab - 
 					Design a simple stateless server program to process client requests.
+					Making use of Process Pair linking with the concept of Parent Process ID.
 	\copyright	:	Copyrights reserved @2016
 */
 

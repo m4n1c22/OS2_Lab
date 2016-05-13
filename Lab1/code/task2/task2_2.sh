@@ -6,6 +6,17 @@ error_count=0
 success_count=0
 count=0
 
+exitfn () {
+    trap SIGINT              
+    kill $CLIENT_PID
+    rm -r requests
+    make clean
+    exit                    
+}
+
+trap "exitfn" INT            # Set up SIGINT trap to call function.
+
+
 make comp_server_task2_2
 make comp_client_task2_2
 #check if the log file exists or not.
@@ -34,5 +45,7 @@ do
 	count=`expr $count + 1`
 	kill $CLIENT_PID
 done
+rm -r requests
+make clean
 success_count=`expr $test_runs - $error_count`
 echo Program executed $test_runs times with $error_count erroneous executions and $success_count successful executions

@@ -1,7 +1,7 @@
 /** 
-	\file		:	client_task2_3.c
+	\file		:	client_task3_1.c
 	\author		:	Sreeram Sadasivam
-	\brief		:	Task 2.3 for Operating Systems:Dependability & Trust Lab - 
+	\brief		:	Task 3.1 for Operating Systems:Dependability & Trust Lab - 
 					Design a client program to send client requests.
 	\copyright	:	Copyrights reserved @2016
 */

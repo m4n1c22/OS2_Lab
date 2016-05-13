@@ -17,12 +17,12 @@ exitfn () {
 trap "exitfn" INT            # Set up SIGINT trap to call function.
 
 
-make comp_server_task2_3
-make comp_client_task2_3
+make comp_server_task3_1
+make comp_client_task3_1
 #check if the log file exists or not.
-if [ -f server_task2_3.log ]
+if [ -f server_task3_1.log ]
 then
-	rm server_task2_3.log
+	rm server_task3_1.log
 fi
 
 while [ "$count" -lt "$test_runs" ]
@@ -33,10 +33,10 @@ do
 		rm -r requests
 	fi
 	mkdir requests
-	./client_task2_3.bin > client_task2_3.log &
+	./client_task3_1.bin > client_task3_1.log &
 	CLIENT_PID=$!
-	./server_task2_3.bin -n 5 -f 50 >> server_task2_3.log
-	error=$(grep -q "Error" server_task2_3.log && echo $?)
+	./server_task3_1.bin -n 5 -f 50 >> server_task3_1.log
+	error=$(grep -q "Error" server_task3_1.log && echo $?)
 	if [ "$error" = 0 ]
 	then
 		echo "Error found"
@@ -46,6 +46,8 @@ do
 	kill $CLIENT_PID
 done
 rm -r requests
-make clean            
+make clean
 success_count=`expr $test_runs - $error_count`
 echo Program executed $test_runs times with $error_count erroneous executions and $success_count successful executions
+
+

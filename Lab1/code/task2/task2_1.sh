@@ -6,6 +6,15 @@ error_count=0
 success_count=0
 count=0
 
+exitfn () {
+    trap SIGINT              
+    make clean
+    exit                    
+}
+
+trap "exitfn" INT            # Set up SIGINT trap to call function.
+
+
 #check if the log file exists or not.
 if [ -f server_task2_1.log ]
 then
@@ -24,5 +33,6 @@ do
 	fi
 	count=`expr $count + 1`
 done
+make clean
 success_count=`expr $test_runs - $error_count`
 echo Program executed $test_runs times with $error_count erroneous executions and $success_count successful executions
