@@ -10,7 +10,6 @@
 /**MACROS*/
 #define DEFAULT_MAX_RESTARTS 		5
 #define DEFAULT_FAILURE_CHANCE		0
-#define INIT_PID					1
 /**Standard Headerfiles*/
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,6 +58,7 @@ int backup(int max_restarts) {
 			/**Process returns and terminates with error*/
 			return EXIT_FAILURE;	
 		}
+		/**Cache the parent process ID before fork*/
 		parentID = getpid();
 		/**
 			Parent Process calls fork() to generate a child process.
@@ -99,7 +99,7 @@ int backup(int max_restarts) {
 }
 
 /** 	Function for detecting parent process failure. Child function polls for parent process ID 
-	until parent process ID changes to INIT. When it detects parent PID as INIT(PID=1) means the
+	until parent process ID changes from the cached one. When it detects parent PID is different from cached means the
 	child can conclude that parent has crashed or terminated, therefore it resets the execution
 	of the program and it becomes the new parent.
 */
