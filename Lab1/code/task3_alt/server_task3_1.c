@@ -35,7 +35,11 @@
 /**Storage variable for the number of restarts encountered by the parent server process.*/
 int num_of_restarts=0;
 
-
+/**Prev Parent ID*/
+int parentID=0;
+/** 
+	Function which creates a backup process for the given server parent process. 
+*/
 int backup(int max_restarts) {
 
 	/**Storage variable for Return values from the system functions: fork, waitpid*/
@@ -46,6 +50,7 @@ int backup(int max_restarts) {
 
 	for (;;)
 	{
+		/**Incrementing the number of child processes being forked.*/
 		num_of_restarts++;
 		/**Verify if the fork limit is reached or not.*/
 		if(num_of_restarts > max_restarts){
@@ -54,6 +59,7 @@ int backup(int max_restarts) {
 			/**Process returns and terminates with error*/
 			return EXIT_FAILURE;	
 		}
+		parentID = getpid();
 		/**
 			Parent Process calls fork() to generate a child process.
 			If the function call is successful, child's PID is returned
@@ -74,6 +80,7 @@ int backup(int max_restarts) {
 			/** Print the process id of the child(server) process to the console.
 			*/
 			printf("server %d\n", getpid());	
+			/**Process returns and terminates with success.*/
 			return EXIT_SUCCESS;
 		}
 		
@@ -86,7 +93,8 @@ int backup(int max_restarts) {
 			/**Process returns and terminates with error*/
 			return EXIT_FAILURE;
 		}
-	}	
+	}
+	/**Process returns and terminates with success.*/
 	return EXIT_SUCCESS;
 }
 
@@ -99,8 +107,8 @@ int backupTerminated (int max_restarts, int failure_chance) {
 
 	/**Storage variable for return values from the system functions: write, usleep and execl.*/
 	int ret_val_usleep,ret_val_execl;
-
-	char c_args[100];
+	/**Storage variable for the command line arguments.*/
+	char c_arg1[100], c_arg2[100];
 
 	/**Reduce the polling frequency.*/
 	ret_val_usleep = usleep(500000);
@@ -110,16 +118,22 @@ int backupTerminated (int max_restarts, int failure_chance) {
 		/**Process returns and terminates with error.*/
 		return EXIT_FAILURE;
 	}	
+	fprintf(stdout, "Parent ID %d\n", getppid());
 	/**Child detects if the parent process ID has been changed. */	
-	if (getppid() == INIT_PID) {
+	if (getppid() != parentID) {
 		fprintf(stderr, "From id %d: Parent (backup) process failed\n", getpid());
 		/**Convert max restart and failure chance into char *.*/
-		if(sprintf(c_args,"-n %d -f %d",max_restarts, failure_chance)<0) {
+		if(sprintf(c_arg1,"%d",max_restarts)<0) {
 			fprintf(stderr, "Error:STDOUT failed.");
 			return EXIT_FAILURE;			
 		}
-		
-		ret_val_execl = execl("./server_task3_1", "server_task3_1", c_args);
+		if(sprintf(c_arg2,"%d", failure_chance)<0) {
+			fprintf(stderr, "Error:STDOUT failed.");
+			return EXIT_FAILURE;			
+		}
+		/**Function call which restarts the child process as parent process. */
+		ret_val_execl = execl("./server_task3_1.bin", "server_task3_1.bin", "-n", c_arg1, "-f", c_arg2, (char *)NULL);
+		/**Condition check for the value returned by the function call execl()*/
 		if(ret_val_execl < 0) {
 			fprintf(stderr, "Error: execl function failed.\n");
 			/**Process returns and terminates with error.*/
@@ -128,6 +142,7 @@ int backupTerminated (int max_restarts, int failure_chance) {
 		/**Process returns and terminates with error.*/
 		return EXIT_FAILURE;
 	}
+	/**Process returns and terminates with success.*/
 	return EXIT_SUCCESS;
 }
 int removeRequest(char *req_file_name) {
@@ -194,7 +209,7 @@ int server(int max_restarts, int failure_chance) {
 			char request_name[100]="requests/";
 			if(ret_backup == EXIT_SUCCESS) {
 				backupTerminated(max_restarts, failure_chance);
-				printf("successfully executed...\n");		
+				//printf("successfully executed...\n");		
 
 			}	    
     		if ((dp = readdir(dirp)) != NULL) {

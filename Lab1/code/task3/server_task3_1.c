@@ -139,7 +139,7 @@ int backupTerminated (int fd[2], int max_restarts, int failure_chance) {
 	/**Heartbeat message which client periodically sends to the parent in order to detect and failure.*/
 	char poll_message[] = "I am alive\n";
 
-	char c_args[100];
+	char c_arg1[100], c_arg2[100];
 
 	/**Reduce the polling frequency.*/
 	ret_val_usleep = usleep(500000);
@@ -163,12 +163,16 @@ int backupTerminated (int fd[2], int max_restarts, int failure_chance) {
 			closePipe(WRITE_END);
 			
 			/**Convert max restart and failure chance into char *.*/
-			if(sprintf(c_args,"-n %d -f %d",max_restarts, failure_chance)<0) {
+			if(sprintf(c_arg1,"%d",max_restarts)<0) {
 				fprintf(stderr, "Error:STDOUT failed.");
 				return EXIT_FAILURE;			
 			}
-			
-			ret_val_execl = execl("./server_task3_1", "server_task3_1", c_args);
+			if(sprintf(c_arg2,"%d", failure_chance)<0) {
+				fprintf(stderr, "Error:STDOUT failed.");
+				return EXIT_FAILURE;			
+			}
+
+			ret_val_execl = execl("./server_task3_1.bin", "server_task3_1.bin", "-n", c_arg1, "-f", c_arg2, (char *)NULL);
 			if(ret_val_execl < 0) {
 				fprintf(stderr, "Error: execl function failed.\n");
 				/**Process returns and terminates with error.*/
@@ -244,7 +248,7 @@ int server(int max_restarts, int failure_chance) {
 			char request_name[100]="requests/";
 			if(ret_backup == EXIT_SUCCESS) {
 				backupTerminated(pipefd, max_restarts, failure_chance);
-				printf("successfully executed...\n");		
+				//printf("successfully executed...\n");		
 
 			}	    
     		if ((dp = readdir(dirp)) != NULL) {
