@@ -26,11 +26,11 @@ comp_client_task3_1:
 	$(CC) $(CFLAGS) $(DIR_CFLAG) $(CLIENT_SRC_TASK3_1) $(OUTPUT_FLAG) $(OUTPUT_CLIENT_TASK3_1)	
 
 #Target to execute the shell script described in task3_1
-test: comp_server_task3_1
+test: comp_server_task3_1 comp_client_task3_1
 	sh $(TASK3_1_SHELL_SCR)
 
 #Target to execute the server program for task3_1
-server_exec_task3_1: comp_server_task3_1	
+server_exec_task3_1: comp_server_task3_1 	
 	./$(OUTPUT_SERVER_TASK3_1)
 
 #Target to execute client program for task3_1

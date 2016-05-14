@@ -56,11 +56,11 @@ test_task2_1: comp_server_task2_1
 	sh $(TASK2_1_SHELL_SCR)
 
 #Target to execute the shell script described in task2_2
-test_task2_2: comp_server_task2_2
+test_task2_2: comp_server_task2_2 comp_client_task2_2
 	sh $(TASK2_2_SHELL_SCR)
 
 #Target to execute the shell script described in task2_3
-test_task2_3: comp_server_task2_3
+test_task2_3: comp_server_task2_3 comp_client_task2_3
 	sh $(TASK2_3_SHELL_SCR)
 
 #Target to execute the task2_1 server program.
