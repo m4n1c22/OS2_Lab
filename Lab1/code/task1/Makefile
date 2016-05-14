@@ -20,7 +20,7 @@ TASK_1_SHELL_SCR = task1_1.sh
 TASK_1_3_SHELL_SCR = task1_3.sh
 
 #Default target which is executed
-all: exec
+all: prog prog_1_3
 
 #Target to execute the shell script described in task1.1
 test: prog
@@ -49,3 +49,8 @@ prog_1_3: $(TASK_1_3_SRC)
 #Clean up the code.
 clean:
 	rm -f *.bin *.o
+#clean up the log files
+cleanlog:
+	rm -f *.log
+#Clean up everything
+cleanall: clean cleanlog

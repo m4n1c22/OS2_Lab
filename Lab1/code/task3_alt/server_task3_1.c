@@ -310,6 +310,7 @@ int main(int argc, char const *argv[])
 		return EXIT_SUCCESS;
 	}
 	else {
+		fprintf(stderr, "Error:Testing Task3 has failed.\n");
 		return EXIT_FAILURE;
 	}
 }

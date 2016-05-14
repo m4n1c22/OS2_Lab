@@ -11,9 +11,7 @@ exitfn () {
     make clean
     exit                    
 }
-
 trap "exitfn" INT            # Set up SIGINT trap to call function.
-
 
 #check if the log file exists or not.
 if [ -f server_task2_1.log ]
@@ -23,16 +21,10 @@ fi
 
 while [ "$count" -lt "$test_runs" ]
 do		
-	make server_exec_task2_1 >> server_task2_1.log
-	
-	error=$(grep -q "Error" server_task2_1.log && echo $?)
-	if [ "$error" = 0 ]
-	then
-		echo "Error found"
-		error_count=`expr $error_count + 1`
-	fi
+	make server_exec_task2_1 2>&1 | tee -a server_task2_1.log
 	count=`expr $count + 1`
 done
 make clean
+error_count=$(grep -c "Error:Testing Task2 has failed." server_task2_1.log)
 success_count=`expr $test_runs - $error_count`
 echo Program executed $test_runs times with $error_count erroneous executions and $success_count successful executions

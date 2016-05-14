@@ -35,17 +35,12 @@ do
 	mkdir requests
 	./client_task2_2.bin > client_task2_2.log &
 	CLIENT_PID=$!
-	./server_task2_2.bin -n 5 >> server_task2_2.log
-	error=$(grep -q "Error" server_task2_2.log && echo $?)
-	if [ "$error" = 0 ]
-	then
-		echo "Error found"
-		error_count=`expr $error_count + 1`
-	fi
+	./server_task2_2.bin -n 5 2>&1 | tee -a server_task2_2.log
 	count=`expr $count + 1`
 	kill $CLIENT_PID
 done
 rm -r requests
 make clean
+error_count=$(grep -c "Error:Testing Task2 has failed." server_task2_2.log)
 success_count=`expr $test_runs - $error_count`
 echo Program executed $test_runs times with $error_count erroneous executions and $success_count successful executions

@@ -200,6 +200,7 @@ int main(int argc, char const *argv[])
 		return EXIT_SUCCESS;
 	}
 	else {
+		fprintf(stderr, "Error:Testing Task2 has failed.\n");
 		return EXIT_FAILURE;
 	}
 }

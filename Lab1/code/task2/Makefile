@@ -29,6 +29,9 @@ TASK2_1_SHELL_SCR=task2_1.sh
 TASK2_2_SHELL_SCR=task2_2.sh
 TASK2_3_SHELL_SCR=task2_3.sh
 
+#Target to compile all internal dependency
+all: comp_server_task2_1 comp_server_task2_2 comp_server_task2_3 comp_client_task2_2 comp_client_task2_3
+
 #Target for internal dependency in task 2_1 and compiling the server code in task2_1
 comp_server_task2_1:
 	$(CC) $(CFLAGS) $(SERVER_SRC_TASK2_1) $(OUTPUT_FLAG) $(OUTPUT_SERVER_TASK2_1)
@@ -84,3 +87,8 @@ client_exec_task2_3: comp_client_task2_3
 #Clean up the code.
 clean:
 	rm -f *.bin *.o
+#clean up the log files
+cleanlog:
+	rm -f *.log
+#Clean up everything
+cleanall: clean cleanlog

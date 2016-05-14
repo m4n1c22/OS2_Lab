@@ -14,6 +14,8 @@ OUTPUT_CLIENT_TASK3_1=client_task3_1.bin
 
 TASK3_1_SHELL_SCR=task3_2.sh
 
+#Target to compile all internal dependencies.
+all: comp_server_task3_1 comp_client_task3_1
 
 #Target for internal dependency in task 3_1 and compiling the server code in task3_1
 comp_server_task3_1:
@@ -38,3 +40,8 @@ client_exec_task3_1: comp_client_task3_1
 #Clean up the code.
 clean:
 	rm -f *.bin *.o
+#clean up the log files
+cleanlog:
+	rm -f *.log
+#Clean up everything
+cleanall: clean cleanlog

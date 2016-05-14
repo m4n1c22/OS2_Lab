@@ -71,12 +71,10 @@ int test_task1_3() {
 		srand(time(NULL));
 		random_number = rand();
 		if (random_number % 2 == 0){
-			//printf("number was\t%d\n",random_number);
 			return EXIT_SUCCESS;
 		}
 		else {
-			//printf("number was\t%d\n",random_number);
-			return EXIT_FAILURE;
+			exit(-1);
 		} 
 	}
 	/**Parent process block.*/
