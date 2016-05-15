@@ -6,6 +6,9 @@ Understanding concept of Process Pairs
 ####Code 
 #####Structure
 The folder contains subfolders task1, task2, task3, task3_alt
+The folder also contains a Makefile.
+
+***Makefile***-> Compiles all the tasks present in the respective task folders.
 
 ***task1/***-> Deals with simple parent-child relationship.
 - Makefile 
@@ -60,6 +63,7 @@ If you run ```make``` without target, it will build all the targets.
 Thus, compiling all tasks.
 
 ######Steps to run Task 1
+ - Initially move into the task1 directory.
  - ```make all``` is the default target. It will invoke all the internal compilable targets.
  - ```make exec``` will execute the task1 by invoking the fork method call once. Which internally 
  creates a parent-child relationship. It invokes the executable named ***prog.bin***
@@ -74,6 +78,7 @@ Thus, compiling all tasks.
  - ```make clean``` will clear all the executables from the folder.
  
 ######Steps to run Task 2
+ - Initially move into the task2 directory.
  - ```make all``` is the default target. It will invoke all the internal compilable targets.
  - ```make comp_server_task2_1``` will compile the server source code for task2.1 and generate the executable in the name                                   referenced as ***server_task2_1.bin***.
  - ```make server_exec_task2_1``` will execute the task2.1. It invokes the executable named ***server_task2_1.bin***.
@@ -99,6 +104,7 @@ Thus, compiling all tasks.
  - ```make clean``` will clear all the executables from the folder.
  
 ######Steps to run Task 3 and Task 3_alt
+ - Initially move into the task3 or task3_alt directory.
  - ```make all``` is the default target. It will invoke all the internal compilable targets.
  - ```make comp_server_task3_1``` will compile the server source code for task3.1 and generate the executable in the name                                   referenced as ***server_task3_1.bin***. 
  - ```make server_exec_task3_1``` will execute the server program for task3.1. It invokes the executable named  
