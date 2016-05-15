@@ -92,3 +92,5 @@ cleanlog:
 	rm -f *.log
 #Clean up everything
 cleanall: clean cleanlog
+
+.PHONY: all clean cleanall cleanlog comp_server_task2_1 comp_server_task2_2 comp_server_task2_3 comp_client_task2_2 comp_client_task2_3 client_exec_task2_2 client_exec_task2_3 server_exec_task2_1 server_exec_task2_2 server_exec_task2_3 test_task2_1 test_task2_2 test_task2_3

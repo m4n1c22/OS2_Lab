@@ -35,7 +35,7 @@ do
 	mkdir requests
 	./client_task3_1.bin > client_task3_1.log &
 	CLIENT_PID=$!
-	./server_task3_1.bin -n 5 -f 10 2>&1 | tee -a server_task3_1.log
+	./server_task3_1.bin -n 5 -f 50 2>&1 | tee -a server_task3_1.log
 	count=`expr $count + 1`
 	kill $CLIENT_PID
 done

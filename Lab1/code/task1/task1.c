@@ -79,7 +79,7 @@ int test_task1() {
 		}
 		printf("I am the parent process. My PID is %d\n", getpid());
 		printf("Creation of child successful. Child's PID is %d\n", ret_val_fork);
-		
+		/**Waitpid function is invoked where parent process waits for the child.*/
 		ret_val_wait = waitpid(ret_val_fork, &child_exit_status, 0);
 		/**Waitpid function fails*/
 		if(ret_val_wait<0) {
@@ -111,7 +111,7 @@ int test_task1() {
 	return EXIT_SUCCESS;
 
 }
-
+/**Main Function with command line arguments.*/
 int main(int argc, char const *argv[])
 {
 	/**Storage variable for return values from the method call to test_task1()*/

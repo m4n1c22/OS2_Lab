@@ -54,3 +54,5 @@ cleanlog:
 	rm -f *.log
 #Clean up everything
 cleanall: clean cleanlog
+
+.PHONY: all clean cleanall cleanlog  test exec prog prog_1_3 exec_1_3 test_task1_3

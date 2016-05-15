@@ -34,10 +34,12 @@
 /**Storage variable for the number of restarts encountered by the parent server process.*/
 int num_of_restarts=0;
 
-/**Prev Parent ID*/
+/**Storage variable for Parent ID*/
 int parentID=0;
 /** 
-	Function which creates a backup process for the given server parent process. 
+	Function which creates a backup process for the given server parent process.
+	Backup function forks new child process only when failure occurs.
+	max_restarts is the limiting parameter which handles the number of child process being spawned. 
 */
 int backup(int max_restarts) {
 
@@ -60,6 +62,7 @@ int backup(int max_restarts) {
 		}
 		/**Cache the parent process ID before fork*/
 		parentID = getpid();
+
 		/**
 			Parent Process calls fork() to generate a child process.
 			If the function call is successful, child's PID is returned
@@ -98,10 +101,13 @@ int backup(int max_restarts) {
 	return EXIT_SUCCESS;
 }
 
-/** 	Function for detecting parent process failure. Child function polls for parent process ID 
-	until parent process ID changes from the cached one. When it detects parent PID is different from cached means the
-	child can conclude that parent has crashed or terminated, therefore it resets the execution
-	of the program and it becomes the new parent.
+/** 	
+	Function for detecting parent process failure. Child function polls for parent process ID 
+	until parent process ID changes from the cached one. When it detects parent PID is different 
+	from cached, the child can conclude that parent has crashed or terminated. Therefore, it 
+	resets the execution of the program and it becomes the new parent.
+	max_restarts and failure_chance are two parameters passed to function whenever there is a need
+	to reset the execution of parent process.
 */
 int backupTerminated (int max_restarts, int failure_chance) {
 
@@ -112,28 +118,32 @@ int backupTerminated (int max_restarts, int failure_chance) {
 
 	/**Reduce the polling frequency.*/
 	ret_val_usleep = usleep(500000);
+	
 	/**Failure in usleep call.*/
 	if(ret_val_usleep < 0) {
 		fprintf(stderr, "Error: usleep function failed.\n");
 		/**Process returns and terminates with error.*/
 		return EXIT_FAILURE;
-	}	
-	fprintf(stdout, "Parent ID %d\n", getppid());
+	}
 	/**Child detects if the parent process ID has been changed. */	
 	if (getppid() != parentID) {
 		fprintf(stderr, "From id %d: Parent (backup) process failed\n", getpid());
-		/**Convert max restart and failure chance into char *.*/
+		/**Convert max restart into string type.*/
 		if(sprintf(c_arg1,"%d",max_restarts)<0) {
 			fprintf(stderr, "Error:STDOUT failed.");
+			/**Process returns and terminates with error.*/
 			return EXIT_FAILURE;			
 		}
+		/**Convert failure chance into string type.*/
 		if(sprintf(c_arg2,"%d", failure_chance)<0) {
 			fprintf(stderr, "Error:STDOUT failed.");
+			/**Process returns and terminates with error.*/
 			return EXIT_FAILURE;			
 		}
-		/**Function call which restarts the child process as parent process. */
+		/**Function call which restarts the child process as the new parent process. */
 		ret_val_execl = execl("./server_task3_1.bin", "server_task3_1.bin", "-n", c_arg1, "-f", c_arg2, (char *)NULL);
-		/**Condition check for the value returned by the function call execl()*/
+		
+		/**Condition check if the value returned by the function execl() is erroneous or not.*/
 		if(ret_val_execl < 0) {
 			fprintf(stderr, "Error: execl function failed.\n");
 			/**Process returns and terminates with error.*/
@@ -145,91 +155,178 @@ int backupTerminated (int max_restarts, int failure_chance) {
 	/**Process returns and terminates with success.*/
 	return EXIT_SUCCESS;
 }
+/**
+	Function which removes the request from the requests directory.
+	The function takes req_file_name as the input for unlinking the file
+	from the given location.
+*/
 int removeRequest(char *req_file_name) {
 
+	/**Failure in unlink function call*/
 	if (unlink(req_file_name)!=0)
 	{
 		fprintf(stderr, "Error:Unlink failed.");
+		/**Process returns and terminates with error.*/
 		return EXIT_FAILURE;
 	}
+	/**Process returns and terminates with success.*/
 	return EXIT_SUCCESS;
 }
-
+/**
+	Function which opens and processes the request.
+	Request is processed by opening the request file with the filename - req_file_name
+	With a failure rate of failure_chance decided upon the file name substring fail.
+	Assumption is to have files named with substring req_ to indicate they are request files.
+*/
 int readRequest(char *req_file_name, int failure_chance) {
 
+	/**Open the request file in read mode.*/
 	FILE *fp = fopen(req_file_name,"r");
 
+	/**
+		Check if the file open function failure. File pointer fp returns an error
+		in this regard.
+	*/
 	if(fp == NULL) {
 		fprintf(stderr, "Error:File Open failed.");
+		/**Process returns and terminates with error.*/
 		return EXIT_FAILURE;
 	}
 
 	printf("Failure rate %d\n", failure_chance);
-
+	/**
+		Condition to check if the request file name contains the string fail.
+	*/
 	if (strstr(req_file_name,"fail")!=NULL) {
+		
+		/**Storage variable for random number generation.*/
 		int random_number;
+		/**Storage variable for failure rate.*/
 		int failure_rate= 0;
-		//srand(time(NULL));
+		/**Random number generation.*/
 		random_number = rand();
+		/**Check for divisibility by zero exception.*/
 		if(failure_chance!=0) {
+			/**Calculating failure rate in regard with 100.*/
 			failure_rate = 100/failure_chance;
+			/**
+				Verifying divisibility of generated random number with the provided
+				failure rate.
+			*/
 			if (random_number % failure_rate == 0){
 				fprintf(stderr, "Error:Child process failed.");
+				/**Process returns and terminates with error.*/
 				return EXIT_FAILURE;
 			}
 		}
 	}
 
 	printf("Server: %d req %s\n", getpid(), req_file_name);
-	fclose(fp);
+	/**Check if the file Close operation has failed or not.*/
+	if(fclose(fp)!=0) {
+		fprintf(stderr, "Error:File Close failed.");
+		/**Process returns and terminates with error.*/
+		return EXIT_FAILURE;
+	}
+	/**Process returns and terminates with success.*/
 	return EXIT_SUCCESS;
 }
 
+/**
+	Function which handles the server process management.
+	The function polls the requests directory for new requests generated
+	by the client processes.
+	The server process management function requires max_restarts as a limitation
+	for graceful degradation.
+	The server process crashes based on the failure_chance.
+*/
 int server(int max_restarts, int failure_chance) {
 
+	/**Directory pointer used to point to the directory location requests.*/
 	DIR *dirp;
+	/**Storage variable for return variables from usleep and backup function calls.*/
 	int ret_val_usleep, ret_backup;
 
+	/**Directory entry pointer.*/
 	struct dirent *dp;
 
 	printf("Server Process has begun processing the requests...\n");
+	
+	/**Generating Backup process with a limitation of max_restarts.*/
 	ret_backup = backup(max_restarts);
+	/**Check for Failure in backup process.*/
 	if(ret_backup == EXIT_SUCCESS) {
 		printf("successfully executed...\n");		
 
 	}
+	/**If backup process cannot be created. The parent process takes control.(Graceful Degradation)*/
 	else {		
 		fprintf(stderr, "Error:Backup cannot be created.\nParent server process PID:%d taking control.\n",getpid());
 	}
 	
 	while(1) {
-		/**Open the current directory.*/
+		/**Open the requests directory.*/
 		dirp = opendir("./requests");
+		/**Condition to check if the opendir function has failed or not.*/
+		if(dirp==NULL) {
+			fprintf(stderr, "Error:Open Directory function failed.\n");
+			/**Process returns and terminates with error.*/
+			return EXIT_FAILURE;	
+		}
 		while(dirp) {
+			/**Storage variable to generate the absolute path for the request file name.*/
 			char request_name[100]="requests/";
+			/**
+				Condition to check it is child process or not. ret_backup will be EXIT_SUCCESS 
+				only when child process is executing.
+			*/
 			if(ret_backup == EXIT_SUCCESS) {
-				backupTerminated(max_restarts, failure_chance);
-				//printf("successfully executed...\n");		
-
+				/**Child Process Polls for the existence of the parent process.*/
+				if(backupTerminated(max_restarts, failure_chance)!=EXIT_SUCCESS) {
+					
+					fprintf(stderr, "Error:backupTerminated function failed.\n");
+					/**Process returns and terminates with error.*/
+					return EXIT_FAILURE;	
+				}
 			}	    
+			/**
+				Condition to check if the readdir function has reached end of the directory
+				or not. It is a condition to detect even failures for the readdir function calls.
+				readdir() returns the directory entry pointer to the next directory file inside the
+				given directory location.
+			*/	    
     		if ((dp = readdir(dirp)) != NULL) {
-        		//printf("Directory Name: %s\n", dp->d_name);
+        		/**
+        			Check if the request file name contains req_ as the substring in the file name.
+        			And if the type of the file is Regular file or not.
+        		*/
         		if ((strstr(dp->d_name,"req_")!=NULL)&&(dp->d_type == DT_REG))
         		{
+        			/**Generating the absolute path of the request file name.*/
         			if(strcat(request_name,dp->d_name)==NULL) {
         				fprintf(stderr, "Error:String Concatenation function failed.\n");
+        				/**Process returns and terminates with error.*/
         				return EXIT_FAILURE;	
         			}
-
+        			/**
+        				Performing readRequest Call with requesting file name and failure chance.
+        				Condition checks if the readRequest call failed or not.
+        			*/	
         			if(readRequest(request_name, failure_chance)==EXIT_FAILURE) {
         				fprintf(stderr, "Error:readRequest function failed.\n");
+        				/**Process returns and terminates with error.*/
         				return EXIT_FAILURE;
         			}
-
+        			/**
+        				Performing removeRequest Call with requesting file name.
+        				Condition checks if the removeRequest call failed or not.
+        			*/	
         			if(removeRequest(request_name)==EXIT_FAILURE) {
 						fprintf(stderr, "Error:removeRequest function failed.\n");
+						/**Process returns and terminates with error.*/
         				return EXIT_FAILURE;
         			}
+        			/**Sleeping the process for 500ms.*/
 					ret_val_usleep = usleep(500000);
 					/**Failure in usleep call.*/
 					if(ret_val_usleep<0) {
@@ -241,91 +338,137 @@ int server(int max_restarts, int failure_chance) {
         		}
     		}
     		else {
+    			/**Directory end reached.*/
     			break;
     		}        
 		}
-		/**Close the requests directory.*/
-		closedir(dirp);
+		/**Close the requests directory. Check if the close operation was successful or not.*/
+		if(closedir(dirp)<0) {
+			fprintf(stderr, "Error:Usleep function failed.\n");
+			/**Process returns and terminates with error*/
+			return EXIT_FAILURE;
+		}
 	}
+	/**Process returns and terminates with success.*/
 	return EXIT_SUCCESS;
 }
 
+/**Main Function with command line arguments.*/
 int main(int argc, char const *argv[])
 {
+	/**Storage variables for max_restarts and failure chance.*/
 	int max_restarts=-1, failure_chance=-1;
 	/**
-		Check if the argument count is 4 or 1. If the argc is 1, it means assume default value as 5 and 0 for
+		Check if the argument count is 5,3 or 1. If the argc is 1, it means assume default value as 5 and 0 for
 		max restarts and failure chance respectively.
+		-f and -n options are optional. If either of the options are not passed, default value is assumed.
 		Else, pass the limit for forks with option -n within a range 1-50 and -f failure option.
 	*/
 	if((argc!=5)&&(argc!=1)&&((argc!=3))) {
-		printf("Invalid usage of the command prog.\nUsage: prog -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100");
+		printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100");
+		/**Process returns and terminates with error.*/
 		return EXIT_FAILURE;
 	}
 	/**Assume default argument.*/
 	else if(argc == 1) {
+		/**Setting the max_restarts and failure_chance storage variables to default values.*/
 		failure_chance = DEFAULT_FAILURE_CHANCE;
 		max_restarts = DEFAULT_MAX_RESTARTS;
 
-	} else if(argc == 3) {
+	} 
+	/**Condition to check one of the options where passed.*/
+	else if(argc == 3) {
+		/**Condition to check if the option passed was -n*/
 		if(strcmp(argv[argc-2],"-n")==0) {
-			
+			/**Setting failure_chance to default value*/
 			failure_chance=DEFAULT_FAILURE_CHANCE;
+			/**Setting the passed argument for max_restarts.*/
 			max_restarts = atoi(argv[argc-1]);
+			/**Check if the argument passed is not the given range of 1-50 or not.*/
 			if((max_restarts>50)||(max_restarts<1)) {
 
 				fprintf(stderr, "Error:Max Restarts out of range. Expected range 1-50\n");
+				/**Process returns and terminates with error.*/
 				return EXIT_FAILURE;
 			}	
 		}
+		/**Condition to check if the option passed was -f*/
 		else if(strcmp(argv[argc-2],"-f")==0) {
-
-			max_restarts = DEFAULT_MAX_RESTARTS;				
+			/**Setting max_restarts to default value*/
+			max_restarts = DEFAULT_MAX_RESTARTS;
+			/**Setting the passed argument for failure_chance.*/				
 			failure_chance = atoi(argv[argc-1]);
+			/**Check if the argument passed is not the given range of 0-100 or not.*/
 			if((failure_chance>100)||(failure_chance<0)) {
 
 				fprintf(stderr, "Error:Failure Chance out of range. Expected range 0-100\n");
+				/**Process returns and terminates with error.*/
 				return EXIT_FAILURE;
 			}
 		}
-		
-	} else if((strcmp(argv[argc-2],"-f")==0)&&(strcmp(argv[argc-4],"-n")==0)) {
+		/**Invalid option.*/
+		else {
+			printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100");
+			/**Process returns and terminates with error.*/
+			return EXIT_FAILURE;
+		}		
+	} 
+	/**Check if -f was the first option used before option -n*/
+	else if((strcmp(argv[argc-2],"-f")==0)&&(strcmp(argv[argc-4],"-n")==0)) {
+		/**Setting the max_restarts with command line arguments provided.*/
 		max_restarts = atoi(argv[argc-3]);
+		/**Check if the argument passed is not the given range of 1-50 or not.*/
 		if((max_restarts>50)||(max_restarts<1)) {
 
 			fprintf(stderr, "Error:Max Restarts out of range. Expected range 1-50\n");
+			/**Process returns and terminates with error.*/
 			return EXIT_FAILURE;
 		}
+		/**Setting the failure_chance with command line arguments provided.*/
 		failure_chance = atoi(argv[argc-1]);			
+		/**Check if the argument passed is not the given range of 0-100 or not.*/
 		if((failure_chance>100)||(failure_chance<0)) {
 
 				fprintf(stderr, "Error:Failure Chance out of range. Expected range 0-100\n");
+				/**Process returns and terminates with error.*/
 				return EXIT_FAILURE;
 		}
-	} else if((strcmp(argv[argc-2],"-n")==0)&&(strcmp(argv[argc-4],"-f")==0)) {
+	}
+	/**Check if -n was the first option used before option -f*/ 
+	else if((strcmp(argv[argc-2],"-n")==0)&&(strcmp(argv[argc-4],"-f")==0)) {
+		/**Setting the max_restarts with command line arguments provided.*/
 		max_restarts = atoi(argv[argc-1]);
+		/**Check if the argument passed is not the given range of 1-50 or not.*/
 		if((max_restarts>50)||(max_restarts<1)) {
 
 			fprintf(stderr, "Error:Max Restarts out of range. Expected range 1-50\n");
+			/**Process returns and terminates with error.*/
 			return EXIT_FAILURE;
 		}
+		/**Setting the failure_chance with command line arguments provided.*/
 		failure_chance = atoi(argv[argc-3]);			
+		/**Check if the argument passed is not the given range of 0-100 or not.*/
 		if((failure_chance>100)||(failure_chance<0)) {
-
 				fprintf(stderr, "Error:Failure Chance out of range. Expected range 0-100\n");
+				/**Process returns and terminates with error.*/
 				return EXIT_FAILURE;
 		}
-	} else {
-		printf("Invalid usage of the command prog.\nUsage: prog -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100");
+	} 
+	/**Condition for Invalid arguments passed.*/
+	else {
+		printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100");
+		/**Process returns and terminates with error.*/
 		return EXIT_FAILURE;	
 	}
 
 	/**Invoking the request processing method.*/
 	if(server(max_restarts, failure_chance)==EXIT_SUCCESS) {
+		/**Process returns and terminates with success.*/
 		return EXIT_SUCCESS;
 	}
 	else {
 		fprintf(stderr, "Error:Testing Task3 has failed.\n");
+		/**Process returns and terminates with error.*/
 		return EXIT_FAILURE;
 	}
 }
