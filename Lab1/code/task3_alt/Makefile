@@ -14,6 +14,8 @@ OUTPUT_CLIENT_TASK3_1=client_task3_1.bin
 
 TASK3_1_SHELL_SCR=task3_2.sh
 
+PARENT_PROCESS_CRASH=parent_process_crash.sh
+
 #Target to compile all internal depenndencies
 all: comp_server_task3_1 comp_client_task3_1
 
@@ -28,6 +30,10 @@ comp_client_task3_1:
 #Target to execute the shell script described in task3_1
 test: comp_server_task3_1 comp_client_task3_1
 	sh $(TASK3_1_SHELL_SCR)
+
+#Target to execute the shell script for crashing the parent process described in task3
+parent_crash:
+	sh $(PARENT_PROCESS_CRASH)
 
 #Target to execute the server program for task3_1
 server_exec_task3_1: comp_server_task3_1 	

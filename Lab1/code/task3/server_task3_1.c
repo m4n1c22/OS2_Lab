@@ -173,6 +173,7 @@ int backupTerminated (int fd[2], int max_restarts, int failure_chance) {
 			}
 
 			ret_val_execl = execl("./server_task3_1.bin", "server_task3_1.bin", "-n", c_arg1, "-f", c_arg2, (char *)NULL);
+			fprintf(stdout, "Return value from EXECL%d\n", ret_val_execl);
 			if(ret_val_execl < 0) {
 				fprintf(stderr, "Error: execl function failed.\n");
 				/**Process returns and terminates with error.*/

@@ -5,7 +5,7 @@ test_runs=10
 error_count=0
 success_count=0
 count=0
-
+#Definition of the interrupt handler routine. Invoked when Ctrl+c/z is encountered.
 exitfn () {
     trap SIGINT              
     make clean

@@ -5,7 +5,7 @@ test_runs=5
 error_count=0
 success_count=0
 count=0
-
+#Definition of the interrupt handler routine. Invoked when Ctrl+c/z is encountered.
 exitfn () {
     trap SIGINT              
     make clean
@@ -19,7 +19,7 @@ if [ -f overall.log ]
 then
 	rm overall.log
 fi
-
+#Execute the prog binary file for test runs times. And write the output in the overall log file.
 while [ "$count" -lt "$test_runs" ]
 do		
 	make exec 2>&1 | tee -a overall.log

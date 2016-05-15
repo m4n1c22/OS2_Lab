@@ -21,12 +21,12 @@
 /**usleep Header file*/
 #include <unistd.h>
 
-
+/**Function to test the task 1*/
 int test_task1() {
 
 	/**Storage variable for Return values from the system functions: fork, waitpid, usleep*/
 	int ret_val_fork, ret_val_wait, ret_val_usleep;
-
+	/**Storage variable for checking the child process exit status.*/
 	int child_exit_status;
 	/**
 		Parent Process calls fork() to generate a child process.
@@ -88,33 +88,42 @@ int test_task1() {
 			return EXIT_FAILURE;
 		}
 		else if(ret_val_wait==ret_val_fork){
+			/**Check if the child process terminated successfully or not.*/
 			if(child_exit_status!=EXIT_SUCCESS) {
 				fprintf(stderr,"Error: Child exited abnormally with status:%d. Child's PID was %d\n", child_exit_status, ret_val_fork);
+				/**Process returns and terminates with error.*/
 				return EXIT_FAILURE;
 			}
 
 			else {
 				printf("Termination of child successful with status:%d. Child's PID was %d\n", WEXITSTATUS(child_exit_status), ret_val_fork);
+				/**Process returns and terminates with success.*/
 				return EXIT_SUCCESS;
 			}
 		}
 		else {
 			fprintf(stderr,"Error: waitpid has returned a positive value which is not the pid of child we were waiting for");
+			/**Process returns and terminates with error.*/
 			return EXIT_FAILURE;
 		}
 	}
-
+	/**Process returns and terminates with success.*/
 	return EXIT_SUCCESS;
 
 }
 
 int main(int argc, char const *argv[])
 {
+	/**Storage variable for return values from the method call to test_task1()*/
 	int ret_val_test_task1;
+	/**Invoking task1 function.*/
 	ret_val_test_task1 = test_task1();
+	/**Check if the function executed successfully or not.*/
 	if(ret_val_test_task1 != EXIT_SUCCESS) {
 		fprintf(stderr, "Error:Testing Task1 Failed.\n");
+		/**Process returns and terminates with error.*/
 		return EXIT_FAILURE;
 	}
+	/**Process returns and terminates with success.*/
 	return EXIT_SUCCESS;
 }
