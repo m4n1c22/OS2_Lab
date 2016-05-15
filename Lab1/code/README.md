@@ -38,7 +38,7 @@ The folder contains subfolders task1, task2, task3, task3_alt
                      rate which the server(child) process will fail. The program utilizes the concept of pipe for linking.
 - client_task3_1.c - Implementation client program for testing in task3.1.
 - task3_2.sh - Implementation of task3 shell script.
-
+- parent_process_crash.sh - Implements a shell script which will crash the parent server process. This script is used for testing parent failures.
 
 ***task3_alt/***-> Deals with a simple stateless server program to process client requests which makes use of process pair 
                with linking concept it uses the concept of Parent Process ID instead of pipes.
@@ -49,6 +49,7 @@ The folder contains subfolders task1, task2, task3, task3_alt
                      parent process ID for linking.
 - client_task3_1.c - Implementation client program for testing in task3.1.
 - task3_2.sh - Implementation of task3 shell script.
+- parent_process_crash.sh - Implements a shell script which will crash the parent server process. This script is used for testing parent failures.
 
 
 #####Build & Run
@@ -59,6 +60,7 @@ If you run ```make``` without target, it will build all the targets.
 Thus, compiling all tasks.
 
 ######Steps to run Task 1
+ - ```make all``` is the default target. It will invoke all the internal compilable targets.
  - ```make exec``` will execute the task1 by invoking the fork method call once. Which internally 
  creates a parent-child relationship. It invokes the executable named ***prog.bin***
  - ```make test``` will execute the shell script ***task1_1.sh*** provided in the folder. The script will generate 
@@ -72,6 +74,7 @@ Thus, compiling all tasks.
  - ```make clean``` will clear all the executables from the folder.
  
 ######Steps to run Task 2
+ - ```make all``` is the default target. It will invoke all the internal compilable targets.
  - ```make comp_server_task2_1``` will compile the server source code for task2.1 and generate the executable in the name                                   referenced as ***server_task2_1.bin***.
  - ```make server_exec_task2_1``` will execute the task2.1. It invokes the executable named ***server_task2_1.bin***.
  - ```make test_task2_1``` will execute the shell script ***task2_1.sh*** provided in the folder. The script will generate 
@@ -96,6 +99,7 @@ Thus, compiling all tasks.
  - ```make clean``` will clear all the executables from the folder.
  
 ######Steps to run Task 3 and Task 3_alt
+ - ```make all``` is the default target. It will invoke all the internal compilable targets.
  - ```make comp_server_task3_1``` will compile the server source code for task3.1 and generate the executable in the name                                   referenced as ***server_task3_1.bin***. 
  - ```make server_exec_task3_1``` will execute the server program for task3.1. It invokes the executable named  
                                   ***server_task3_1.bin***. The executable expects two options and two values to be passed 
@@ -103,7 +107,8 @@ Thus, compiling all tasks.
  - ```make comp_client_task3_1``` will compile the client source code for task3.1 and generate the executable in the name                                   referenced as ***client_task3_1.bin***. 
  - ```make client_exec_task3_1``` will execute the client program for task3.1. It invokes the executable named                                              ***client_task3_1.bin***.
  - ```make test``` will execute the shell script ***task3_2.sh*** provided in the folder. The script will generate 
-                           calls to the executable ***server_task3_1.bin*** and ***client_task3_1.bin*** generate after compilation.
+                  calls to the executable ***server_task3_1.bin*** and ***client_task3_1.bin*** generate after compilation.
+ - ```make parent_crash``` will invoke the shell script ***parent_process_crash.sh*** file. It will internally kill the parent process associated with the server program.
  - ```make clean``` will clear all the executables from the folder.
 
  For more details refer the [document](https://github.com/m4n1c22/OS2_Lab/blob/master/Lab1/doc/lab1-process-pairs.pdf)
