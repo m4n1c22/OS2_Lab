@@ -10,6 +10,8 @@
 /**MACROS*/
 #define DEFAULT_MAX_RESTARTS 		5
 #define DEFAULT_FAILURE_CHANCE		0
+#define ERR_NOT_INT 				-100
+
 /**Standard Headerfiles*/
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +38,25 @@ int num_of_restarts=0;
 
 /**Storage variable for Parent ID*/
 int parentID=0;
+
+/** Function to perform a custom atoi functionality since atoi is not full proof*/
+int custom_atoi(char *input_string) {
+
+	int i = 0;
+	for(; i < strlen(input_string); ++i) {	
+		/** 
+			If current ith indexed char is not an integer number and ith indexed char
+			has lower value than 0 char return invalid integer.
+		*/ 		
+		if(!((*(input_string+i)>= 48) && (*(input_string+i) <=57))) {
+			/**Return Error since the read string is not an integer.*/
+			return ERR_NOT_INT;
+		}
+	}
+	/**Return atoi value*/
+	return atoi(input_string);
+}
+
 /** 
 	Function which creates a backup process for the given server parent process.
 	Backup function forks new child process only when failure occurs.
@@ -365,7 +386,7 @@ int main(int argc, char const *argv[])
 		Else, pass the limit for forks with option -n within a range 1-50 and -f failure option.
 	*/
 	if((argc!=5)&&(argc!=1)&&((argc!=3))) {
-		printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100");
+		printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100\n");
 		/**Process returns and terminates with error.*/
 		return EXIT_FAILURE;
 	}
@@ -383,11 +404,12 @@ int main(int argc, char const *argv[])
 			/**Setting failure_chance to default value*/
 			failure_chance=DEFAULT_FAILURE_CHANCE;
 			/**Setting the passed argument for max_restarts.*/
-			max_restarts = atoi(argv[argc-1]);
+			max_restarts = custom_atoi((char*) argv[argc-1]);
 			/**Check if the argument passed is not the given range of 1-50 or not.*/
 			if((max_restarts>50)||(max_restarts<1)) {
 
 				fprintf(stderr, "Error:Max Restarts out of range. Expected range 1-50\n");
+				printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100\n");
 				/**Process returns and terminates with error.*/
 				return EXIT_FAILURE;
 			}	
@@ -397,18 +419,19 @@ int main(int argc, char const *argv[])
 			/**Setting max_restarts to default value*/
 			max_restarts = DEFAULT_MAX_RESTARTS;
 			/**Setting the passed argument for failure_chance.*/				
-			failure_chance = atoi(argv[argc-1]);
+			failure_chance = custom_atoi((char*) argv[argc-1]);
 			/**Check if the argument passed is not the given range of 0-100 or not.*/
 			if((failure_chance>100)||(failure_chance<0)) {
 
 				fprintf(stderr, "Error:Failure Chance out of range. Expected range 0-100\n");
+				printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100\n");
 				/**Process returns and terminates with error.*/
 				return EXIT_FAILURE;
 			}
 		}
 		/**Invalid option.*/
 		else {
-			printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100");
+			printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100\n");
 			/**Process returns and terminates with error.*/
 			return EXIT_FAILURE;
 		}		
@@ -416,20 +439,22 @@ int main(int argc, char const *argv[])
 	/**Check if -f was the first option used before option -n*/
 	else if((strcmp(argv[argc-2],"-f")==0)&&(strcmp(argv[argc-4],"-n")==0)) {
 		/**Setting the max_restarts with command line arguments provided.*/
-		max_restarts = atoi(argv[argc-3]);
+		max_restarts = custom_atoi((char*) argv[argc-3]);
 		/**Check if the argument passed is not the given range of 1-50 or not.*/
 		if((max_restarts>50)||(max_restarts<1)) {
 
 			fprintf(stderr, "Error:Max Restarts out of range. Expected range 1-50\n");
+			printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100\n");
 			/**Process returns and terminates with error.*/
 			return EXIT_FAILURE;
 		}
 		/**Setting the failure_chance with command line arguments provided.*/
-		failure_chance = atoi(argv[argc-1]);			
+		failure_chance = custom_atoi((char*) argv[argc-1]);			
 		/**Check if the argument passed is not the given range of 0-100 or not.*/
 		if((failure_chance>100)||(failure_chance<0)) {
 
 				fprintf(stderr, "Error:Failure Chance out of range. Expected range 0-100\n");
+				printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100\n");
 				/**Process returns and terminates with error.*/
 				return EXIT_FAILURE;
 		}
@@ -437,26 +462,28 @@ int main(int argc, char const *argv[])
 	/**Check if -n was the first option used before option -f*/ 
 	else if((strcmp(argv[argc-2],"-n")==0)&&(strcmp(argv[argc-4],"-f")==0)) {
 		/**Setting the max_restarts with command line arguments provided.*/
-		max_restarts = atoi(argv[argc-1]);
+		max_restarts = custom_atoi((char*) argv[argc-1]);
 		/**Check if the argument passed is not the given range of 1-50 or not.*/
 		if((max_restarts>50)||(max_restarts<1)) {
 
 			fprintf(stderr, "Error:Max Restarts out of range. Expected range 1-50\n");
+			printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100\n");
 			/**Process returns and terminates with error.*/
 			return EXIT_FAILURE;
 		}
 		/**Setting the failure_chance with command line arguments provided.*/
-		failure_chance = atoi(argv[argc-3]);			
+		failure_chance = custom_atoi((char*) argv[argc-3]);			
 		/**Check if the argument passed is not the given range of 0-100 or not.*/
 		if((failure_chance>100)||(failure_chance<0)) {
 				fprintf(stderr, "Error:Failure Chance out of range. Expected range 0-100\n");
+				printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100\n");
 				/**Process returns and terminates with error.*/
 				return EXIT_FAILURE;
 		}
 	} 
 	/**Condition for Invalid arguments passed.*/
 	else {
-		printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100");
+		printf("Invalid usage of the command server_task3_1.bin.\nUsage: server_task3_1.bin -n <N> -f <F> where N is a number in the range 1-50\nF is a number in the range of 0-100\n");
 		/**Process returns and terminates with error.*/
 		return EXIT_FAILURE;	
 	}
